@@ -1,0 +1,8 @@
+name = "nutrient-tracking-worker"
+main = "src/index.js"
+compatibility_date = "2023-12-01"
+
+[vars]
+# Add environment variables here or bind secrets via: wrangler secret put GROQ_API_KEY
+# GROQ_API_KEY = "your-groq-api-key"
+# GITHUB_TOKEN = "your-github-pat"

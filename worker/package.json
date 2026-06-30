@@ -1,0 +1,13 @@
+{
+  "name": "nutrient-tracking-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker Proxy for Groq & GitHub Models Vision API with Failover",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

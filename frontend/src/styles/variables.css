@@ -1,0 +1,23 @@
+:root {
+  /* Colors */
+  --bg-main: #0D0E12;
+  --bg-card: rgba(22, 24, 30, 0.7);
+  --border-card: 1px solid rgba(139, 92, 246, 0.2);
+  --border-card-hover: 1px solid rgba(139, 92, 246, 0.4);
+  
+  --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Macro Specific Colors */
+  --color-calories: #06B6D4; /* Electric Cyan */
+  --color-protein: #10B981;  /* Neon Mint */
+  --color-carbs: #F59E0B;    /* Sunset Gold */
+  --color-fat: #EF4444;      /* Coral Red */
+  
+  /* Text */
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  
+  /* Spacing */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
