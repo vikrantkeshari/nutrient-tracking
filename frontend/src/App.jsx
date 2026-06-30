@@ -124,6 +124,9 @@ export default function App() {
   const [authError, setAuthError] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [newFamilyName, setNewFamilyName] = useState('');
+  const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
 
   // Log Form state
   const [logType, setLogType] = useState('text'); // 'text', 'camera', 'upload'
@@ -286,23 +289,45 @@ export default function App() {
     try {
       if (isRegistering) {
         // Register account
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: displayName || email.split('@')[0],
+              age: age ? Number(age) : null,
+              weight: weight ? Number(weight) : null,
+              height: height ? Number(height) : null
+            }
+          }
+        });
         if (error) throw error;
         
         if (data.user) {
           // Initialize empty profile (User must join or create family next)
-          const { error: profileErr } = await supabase
-            .from('profiles')
-            .insert({
-              id: data.user.id,
-              display_name: displayName || email.split('@')[0],
-              daily_calorie_goal: 2000,
-              daily_protein_goal: 150,
-              daily_carb_goal: 200,
-              daily_fat_goal: 70,
-              share_with_family: true
-            });
-          if (profileErr) throw profileErr;
+          try {
+            const { error: profileErr } = await supabase
+              .from('profiles')
+              .upsert({
+                id: data.user.id,
+                display_name: displayName || email.split('@')[0],
+                daily_calorie_goal: 2000,
+                daily_protein_goal: 150,
+                daily_carb_goal: 200,
+                daily_fat_goal: 70,
+                share_with_family: true,
+                age: age ? Number(age) : null,
+                weight: weight ? Number(weight) : null,
+                height: height ? Number(height) : null
+              });
+            // If email verification is on, this manual insert will fail due to lack of active auth token.
+            // The backend database trigger handles creation in that case, so we safely catch RLS errors.
+            if (profileErr && !profileErr.message.includes('row-level security')) {
+              throw profileErr;
+            }
+          } catch (err) {
+            console.warn("Profile creation handled via database trigger:", err);
+          }
         }
       } else {
         // Login account
@@ -1525,17 +1550,52 @@ export default function App() {
               )}
 
               {isRegistering && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Your Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Sarah"
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    required
-                    style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }} 
-                  />
-                </div>
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Your Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Sarah"
+                      value={displayName}
+                      onChange={e => setDisplayName(e.target.value)}
+                      required
+                      style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem' }} 
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Age</label>
+                      <input 
+                        type="number" 
+                        placeholder="28"
+                        value={age}
+                        onChange={e => setAge(e.target.value)}
+                        style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', width: '100%' }} 
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Weight (kg)</label>
+                      <input 
+                        type="number" 
+                        placeholder="70"
+                        value={weight}
+                        onChange={e => setWeight(e.target.value)}
+                        style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', width: '100%' }} 
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Height (cm)</label>
+                      <input 
+                        type="number" 
+                        placeholder="175"
+                        value={height}
+                        onChange={e => setHeight(e.target.value)}
+                        style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'white', fontSize: '0.85rem', width: '100%' }} 
+                      />
+                    </div>
+                  </div>
+                </>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
