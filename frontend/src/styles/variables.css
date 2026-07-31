@@ -1,23 +1,20 @@
 :root {
-  /* Colors */
-  --bg-main: #0D0E12;
-  --bg-card: rgba(22, 24, 30, 0.7);
-  --border-card: 1px solid rgba(139, 92, 246, 0.2);
-  --border-card-hover: 1px solid rgba(139, 92, 246, 0.4);
-  
+  --bg: #0B0C10;
+  --card: #191C24;
+  --card2: #232732;
+  --line: rgba(255, 255, 255, 0.14);
+  --accent: #A78BFA;
+  --accent-soft: rgba(167, 139, 250, 0.18);
+
+  --cal: #22D3EE;
+  --pro: #34D399;
+  --carb: #FBBF24;
+  --fat: #F87171;
+
+  /* High-contrast text only — two tiers, both WCAG AA on --card */
+  --t1: #FFFFFF;
+  --t2: #D5DAE3;
+
   --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
-  /* Macro Specific Colors */
-  --color-calories: #06B6D4; /* Electric Cyan */
-  --color-protein: #10B981;  /* Neon Mint */
-  --color-carbs: #F59E0B;    /* Sunset Gold */
-  --color-fat: #EF4444;      /* Coral Red */
-  
-  /* Text */
-  --text-primary: #F3F4F6;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-  
-  /* Spacing */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }

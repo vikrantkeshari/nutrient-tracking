@@ -3,6 +3,9 @@ main = "src/index.js"
 compatibility_date = "2023-12-01"
 
 [vars]
-# Add environment variables here or bind secrets via: wrangler secret put GROQ_API_KEY
-# GROQ_API_KEY = "your-groq-api-key"
-# GITHUB_TOKEN = "your-github-pat"
+# Comma-separated origins allowed to call this worker (localhost always allowed)
+ALLOWED_ORIGINS = "https://vikrantkeshari.github.io"
+
+# Secrets — set via CLI, never commit values:
+#   wrangler secret put GEMINI_API_KEY   (primary — https://aistudio.google.com/apikey, free)
+#   wrangler secret put GITHUB_TOKEN     (fallback — GitHub PAT for models.inference.ai.azure.com)

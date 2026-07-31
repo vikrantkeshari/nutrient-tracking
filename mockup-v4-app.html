@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nutrient Tracking — Full App</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0C10; --card:#191C24; --card2:#232732;
+  --line:rgba(255,255,255,.14);
+  --accent:#A78BFA;
+  --cal:#22D3EE; --pro:#34D399; --carb:#FBBF24; --fat:#F87171;
+  --t1:#FFFFFF; --t2:#D5DAE3;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#000;font-family:Outfit,system-ui,sans-serif;color:var(--t1);line-height:1.5;font-size:18px}
+.phone{max-width:440px;min-height:100vh;margin:0 auto;background:var(--bg);display:flex;flex-direction:column}
+.phone.tabbed{padding-bottom:calc(104px + var(--safe))}
+.scroll{flex:1;overflow-y:auto;padding-bottom:24px}
+::-webkit-scrollbar{width:0}
+
+.pad{padding:26px 20px 10px}
+.stack{display:flex;flex-direction:column;gap:16px;padding:0 20px 24px}
+h1{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+h2{font-size:1.25rem;font-weight:700;margin-bottom:16px}
+.day{font-size:1.05rem;color:var(--t2);font-weight:600;margin-top:6px}
+.lab{font-size:1.02rem;color:var(--t2);font-weight:700;margin-bottom:9px;display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.note{font-size:1rem;color:var(--t2);line-height:1.6;font-weight:500}
+
+button{font-family:inherit;cursor:pointer;border:none}
+.big{width:100%;min-height:70px;border-radius:16px;background:var(--accent);color:#12101A;
+  font-size:1.25rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px}
+.big.alt{background:var(--card2);color:var(--t1);border:2px solid var(--line)}
+.big.plain{background:none;border:none;color:var(--t2);font-size:1.1rem;font-weight:700;min-height:56px}
+.big.danger{background:rgba(248,113,113,.15);color:#FCA5A5;border:2px solid rgba(248,113,113,.4)}
+.big:active{transform:scale(.98)}
+.small{width:auto;min-height:52px;padding:0 20px;font-size:1.02rem;margin-bottom:18px}
+
+input,textarea{width:100%;min-height:66px;padding:0 18px;background:#0E1014;border:2px solid var(--line);
+  border-radius:14px;color:var(--t1);font-family:inherit;font-size:1.25rem;font-weight:600;outline:none}
+textarea{padding:18px;min-height:130px;resize:none;font-size:1.12rem;line-height:1.5}
+input:focus,textarea:focus{border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:#7A8290;font-weight:500}
+.pwwrap{position:relative}
+.pwwrap .show{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:52px;padding:0 16px;
+  border-radius:11px;background:var(--card2);color:var(--t2);font-size:.98rem;font-weight:700;border:1px solid var(--line)}
+.field+.field{margin-top:20px}
+
+.num{display:flex;align-items:center;gap:12px}
+.num button{width:66px;min-height:66px;flex:0 0 66px;border-radius:14px;background:var(--card2);
+  border:2px solid var(--line);color:var(--t1);font-size:1.9rem;font-weight:700}
+.num input{text-align:center}
+
+.choice{width:100%;min-height:90px;border-radius:16px;background:var(--card2);border:2px solid var(--line);
+  color:var(--t1);font-size:1.2rem;font-weight:700;text-align:left;padding:16px 20px;
+  display:flex;flex-direction:column;justify-content:center;gap:4px}
+.choice span{font-size:.98rem;color:var(--t2);font-weight:600}
+.choice.on{background:rgba(167,139,250,.18);border-color:var(--accent)}
+.choice:active{border-color:var(--accent)}
+
+.err{background:rgba(248,113,113,.14);border:2px solid rgba(248,113,113,.4);border-radius:14px;
+  padding:16px 18px;font-size:1.02rem;font-weight:600;color:#FCA5A5}
+.okmsg{background:rgba(52,211,153,.13);border:2px solid rgba(52,211,153,.4);border-radius:14px;
+  padding:16px 18px;font-size:1.02rem;font-weight:600;color:#6EE7B7}
+
+.bigbar{height:22px;background:rgba(255,255,255,.1);border-radius:11px;overflow:hidden}
+.bigbar>div{height:100%;border-radius:11px;transition:width .5s ease}
+.mbar{height:14px;background:rgba(255,255,255,.1);border-radius:7px;overflow:hidden;margin-top:8px}
+.mbar>div{height:100%;border-radius:7px;transition:width .5s ease}
+.mrow+.mrow{margin-top:18px}
+
+.item{padding:16px 0;display:flex;align-items:center;gap:12px}
+.item+.item{border-top:1px solid var(--line)}
+.name{font-size:1.12rem;font-weight:700}
+.meta{font-size:.98rem;color:var(--t2);margin-top:4px;font-weight:600}
+.del{width:52px;height:52px;flex:0 0 52px;border-radius:12px;background:var(--card2);
+  border:1px solid var(--line);color:var(--t2);display:flex;align-items:center;justify-content:center}
+
+.person{display:flex;align-items:center;gap:14px}
+.av{width:52px;height:52px;border-radius:50%;background:var(--card2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;flex-shrink:0}
+
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;
+  height:calc(100px + var(--safe));padding-bottom:var(--safe);background:#12141B;border-top:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-around;z-index:50}
+.nav button{background:none;color:var(--t2);font-size:.92rem;font-weight:700;display:flex;flex-direction:column;
+  align-items:center;gap:6px;flex:1;height:100%;justify-content:center}
+.nav button.on{color:var(--accent)}
+.nav .add{flex:0 0 90px;background:var(--accent);color:#12101A;height:74px;border-radius:20px;font-size:.92rem;gap:2px}
+svg.i{width:28px;height:28px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+.step{display:flex;gap:8px;margin-bottom:18px}
+.step div{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.13)}
+.step div.on{background:var(--accent)}
+.logo{width:84px;height:84px;border-radius:24px;background:rgba(167,139,250,.18);
+  border:2px solid rgba(167,139,250,.4);display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;margin-bottom:24px}
+.toast{position:fixed;bottom:calc(118px + var(--safe));left:50%;transform:translateX(-50%);z-index:80;
+  background:#232732;border:2px solid rgba(52,211,153,.5);color:#fff;font-size:1.05rem;font-weight:700;
+  padding:16px 24px;border-radius:16px;max-width:88vw;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.fade{animation:f .25s ease}
+@keyframes f{from{opacity:0}to{opacity:1}}
+.codebox{background:#0E1014;border:2px dashed rgba(167,139,250,.5);border-radius:14px;padding:18px;
+  text-align:center;font-size:1.7rem;font-weight:800;letter-spacing:.08em;color:var(--accent)}
+.reset{position:fixed;top:8px;right:8px;z-index:99;background:#232732;border:1px solid var(--line);
+  color:var(--t2);font-size:.72rem;font-weight:700;padding:8px 12px;border-radius:16px}
+</style>
+</head>
+<body>
+<button class="reset" onclick="resetAll()">Reset demo</button>
+<div class="phone" id="phone"><div class="scroll" id="view"></div><div class="nav" id="nav" style="display:none"></div></div>
+
+<script>
+/* ================= STATE (persisted) ================= */
+const DEFAULTS={
+  authed:false, name:'', email:'', age:60, weight:70, height:165,
+  screen:'welcome', tab:'today', gi:0, step:'pick', mode:'photo', joinMode:null, pw:false, err:'',
+  goals:{cal:2000,pro:150,carb:200,fat:70},
+  meals:[],          // {id,n,c,p,cb,f,time,dateKey}
+  groups:[],         // {name,code,mine:'meals'|'totals'|'none',members:[...]}
+  pendingGroup:null, // group awaiting sharing choice during setup
+  estimate:null      // current AI estimate under review
+};
+const DEMO_MEMBERS={
+  'FAM-7K2X9M':{name:'Family',members:[
+    {n:'Priya',lvl:'meals',cal:1180,p:72,cb:120,f:41,meals:[{n:'Paneer Salad',c:410,t:'1:40 PM'},{n:'Poha & Chai',c:340,t:'8:30 AM'}]},
+    {n:'Dad',lvl:'totals',cal:1890,p:104,cb:210,f:62,meals:[]},
+    {n:'Liam',lvl:'none',cal:null,meals:[]}]},
+  'GYM-4B8QZ1':{name:'Gym Friends',members:[
+    {n:'Rahul',lvl:'totals',cal:2640,p:198,cb:242,f:78,meals:[]},
+    {n:'Sneha',lvl:'totals',cal:1720,p:141,cb:150,f:52,meals:[]}]},
+  'OFF-9W3RT6':{name:'Office',members:[
+    {n:'Meera',lvl:'totals',cal:1540,p:88,cb:168,f:49,meals:[]},
+    {n:'Tom',lvl:'none',cal:null,meals:[]}]}
+};
+let S;
+const clone=o=>JSON.parse(JSON.stringify(o)); // works everywhere, incl. old WebViews
+function load(){try{S={...clone(DEFAULTS),...JSON.parse(localStorage.getItem('nt_demo')||'{}')}}catch(e){S=clone(DEFAULTS)}}
+function save(){try{localStorage.setItem('nt_demo',JSON.stringify(S))}catch(e){}}
+function resetAll(){localStorage.removeItem('nt_demo');load();R()}
+load();
+
+/* ================= HELPERS ================= */
+const ic={
+  today:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  groups:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/>',
+  me:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  cam:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  txt:'<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  chev:'<path d="M9 18l6-6-6-6"/>', back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>', trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>'
+};
+const I=(k,s=28)=>`<svg class="i" viewBox="0 0 24 24" style="width:${s}px;height:${s}px">${ic[k]}</svg>`;
+const P=(a,b)=>Math.min(a/Math.max(b,1)*100,100);
+const C={cal:'var(--cal)',pro:'var(--pro)',carb:'var(--carb)',fat:'var(--fat)'};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const todayKey=()=>new Date().toDateString();
+const nowT=()=>new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+const totals=()=>S.meals.filter(m=>m.dateKey===todayKey()).reduce((t,m)=>({cal:t.cal+m.c,pro:t.pro+m.p,carb:t.carb+m.cb,fat:t.fat+m.f}),{cal:0,pro:0,carb:0,fat:0});
+const val=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
+let toastTimer;
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.remove(),2600);
+}
+function stepper(id,lbl,v,unit,min=0,max=9999,d=1){
+  return `<div class="field"><label class="lab">${lbl}</label>
+    <div class="num">
+      <button onclick="bump('${id}',-${d},${min},${max})" aria-label="less">−</button>
+      <input id="${id}" value="${v}" inputmode="numeric">
+      <button onclick="bump('${id}',${d},${min},${max})" aria-label="more">+</button>
+    </div>${unit?`<div class="note" style="margin-top:8px">${unit}</div>`:''}</div>`;
+}
+function bump(id,d,min,max){const e=document.getElementById(id);let v=parseInt(e.value)||0;v=Math.max(min,Math.min(max,v+d));e.value=v;}
+const backBtn=fn=>`<button class="big alt small" onclick="${fn}">${I('back',22)} Back</button>`;
+const bars=n=>`<div class="step">${[1,2,3].map(i=>`<div class="${i<=n?'on':''}"></div>`).join('')}</div>`;
+
+/* fake AI: keyword lookup for text, rotating dish for photo */
+const FOODS=[
+  [/roti|chapati|dal|curd|sabzi/i,{n:'Roti, Dal & Curd',c:430,p:18,cb:62,f:12,cf:.86}],
+  [/rice|biryani|pulao/i,{n:'Rice Bowl',c:520,p:14,cb:88,f:11,cf:.84}],
+  [/egg|omelet|omelette/i,{n:'Eggs & Toast',c:340,p:22,cb:24,f:16,cf:.9}],
+  [/chicken/i,{n:'Chicken & Vegetables',c:480,p:44,cb:26,f:18,cf:.92}],
+  [/salad|paneer/i,{n:'Paneer Salad',c:390,p:24,cb:22,f:22,cf:.88}],
+  [/oats|porridge|poha|upma/i,{n:'Oats Bowl',c:310,p:11,cb:52,f:7,cf:.9}],
+  [/shake|smoothie|protein/i,{n:'Protein Shake',c:220,p:30,cb:12,f:4,cf:.95}],
+  [/tea|chai|coffee|biscuit/i,{n:'Chai & Biscuits',c:180,p:4,cb:26,f:7,cf:.8}]
+];
+const PHOTO_DISHES=[
+  {n:'Grilled Chicken & Quinoa',c:520,p:48,cb:52,f:12,cf:.94},
+  {n:'Vegetable Thali',c:640,p:21,cb:92,f:20,cf:.82},
+  {n:'Masala Dosa',c:450,p:10,cb:68,f:16,cf:.87},
+  {n:'Fruit & Yogurt Bowl',c:260,p:12,cb:44,f:5,cf:.91}
+];
+let photoIdx=0;
+function fakeAI(mode,text){
+  if(mode==='text'&&text){for(const[re,f]of FOODS)if(re.test(text))return{...f};
+    return{n:text.length>40?text.slice(0,40)+'…':text,c:400,p:18,cb:50,f:14,cf:.6}}
+  const d=PHOTO_DISHES[photoIdx++ % PHOTO_DISHES.length];return{...d};
+}
+function suggestGoals(){
+  // Mifflin-St Jeor (male form for demo), activity 1.4
+  const bmr=10*S.weight+6.25*S.height-5*S.age+5, tdee=Math.round(bmr*1.4/10)*10;
+  return{cal:tdee,pro:Math.round(S.weight*1.6),carb:Math.round(tdee*.45/4),fat:Math.round(tdee*.28/9)};
+}
+const newCode=()=>['FAM','GRP','TEM'][Math.floor(Math.random()*3)]+'-'+Array.from({length:6},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*31)]).join('');
+
+/* ================= ONBOARDING SCREENS ================= */
+const welcome=()=>`<div class="fade"><div class="pad" style="padding-top:64px">
+  <div class="logo">🥗</div><h1>Track what you eat</h1>
+  <div class="day">Take a photo of your meal.<br>We work out the rest.</div></div>
+  <div class="stack" style="margin-top:22px">
+    <button class="big" onclick="go('signup')">Create an account</button>
+    <button class="big alt" onclick="go('signin')">I already have an account</button>
+  </div></div>`;
+
+const signin=()=>`<div class="fade"><div class="pad">${backBtn("go('welcome')")}<h1>Sign in</h1></div>
+  <div class="stack">
+    ${S.err?`<div class="err">${esc(S.err)}</div>`:''}
+    <div class="card">
+      <div class="field"><label class="lab">Your email</label><input id="f-email" type="email" placeholder="name@email.com" value="${esc(S.email)}"></div>
+      <div class="field"><label class="lab">Password</label>
+        <div class="pwwrap"><input id="f-pw" type="${S.pw?'text':'password'}" placeholder="Your password">
+        <button class="show" onclick="S.email=val('f-email');S.pw=!S.pw;R()">${S.pw?'Hide':'Show'}</button></div></div>
+    </div>
+    <button class="big" onclick="doSignIn()">Sign in</button>
+    <button class="big plain" onclick="go('forgot')">I forgot my password</button>
+  </div></div>`;
+
+const forgot=()=>`<div class="fade"><div class="pad">${backBtn("go('signin')")}<h1>Forgot password</h1>
+  <div class="day">We will email you a link to make a new one.</div></div>
+  <div class="stack"><div class="card"><label class="lab">Your email</label>
+    <input id="f-email" type="email" placeholder="name@email.com" value="${esc(S.email)}"></div>
+  <button class="big" onclick="S.email=val('f-email');go('sent')">Send me the link</button></div></div>`;
+
+const sent=()=>`<div class="fade"><div class="pad" style="padding-top:70px;text-align:center">
+  <div class="logo" style="margin:0 auto 24px;background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4)">${I('mail',42)}</div>
+  <h1>Check your email</h1><div class="day">Open the link we sent to make a new password.</div></div>
+  <div class="stack" style="margin-top:22px"><button class="big alt" onclick="go('signin')">Back to sign in</button></div></div>`;
+
+const signup=()=>`<div class="fade"><div class="pad">${backBtn("go('welcome')")}${bars(1)}
+  <h1>Create account</h1><div class="day">Step 1 of 3</div></div>
+  <div class="stack">
+    ${S.err?`<div class="err">${esc(S.err)}</div>`:''}
+    <div class="card">
+      <div class="field"><label class="lab">Your name</label><input id="f-name" placeholder="e.g. Sunita" value="${esc(S.name)}"></div>
+      <div class="field"><label class="lab">Your email</label><input id="f-email" type="email" placeholder="name@email.com" value="${esc(S.email)}"></div>
+      <div class="field"><label class="lab">Make a password</label>
+        <div class="pwwrap"><input id="f-pw" type="${S.pw?'text':'password'}" placeholder="At least 8 letters">
+        <button class="show" onclick="S.name=val('f-name');S.email=val('f-email');S.pw=!S.pw;R()">${S.pw?'Hide':'Show'}</button></div>
+        <div class="note" style="margin-top:12px">Tap <b>Show</b> to see what you typed.</div></div>
+    </div>
+    <button class="big" onclick="doSignUp()">Next</button>
+  </div></div>`;
+
+const about=()=>`<div class="fade"><div class="pad">${backBtn("go('signup')")}${bars(2)}
+  <h1>About you</h1><div class="day">Step 2 of 3 — sets your daily goals</div></div>
+  <div class="stack"><div class="card">
+    ${stepper('f-age','Your age',S.age,'In years',10,110)}
+    ${stepper('f-wt','Your weight',S.weight,'In kilograms',30,200)}
+    ${stepper('f-ht','Your height',S.height,'In centimetres',100,220)}
+  </div>
+  <button class="big" onclick="saveAbout(true)">Next</button>
+  <button class="big plain" onclick="saveAbout(false)">Skip for now</button></div></div>`;
+
+const grpSetup=()=>{
+  if(S.joinMode==='join')return joinScreen("S.joinMode=null;S.err='';R()");
+  if(S.joinMode==='create')return createScreen("S.joinMode=null;R()");
+  return `<div class="fade"><div class="pad">${backBtn("go('about')")}${bars(3)}
+    <h1>Share with people</h1><div class="day">Step 3 of 3 — you can change this any time</div></div>
+    <div class="stack">
+      <button class="choice" onclick="S.joinMode='join';R()">Join a group<span>Someone gave you a code</span></button>
+      <button class="choice" onclick="S.joinMode='create';R()">Start a new group<span>Invite your family or friends</span></button>
+      <button class="choice" onclick="finishSetup()">Just me for now<span>Track on your own — nobody sees anything</span></button>
+    </div></div>`;
+};
+
+function joinScreen(backFn){
+  return `<div class="fade"><div class="pad"><button class="big alt small" onclick="${backFn}">${I('back',22)} Back</button>
+    <h1>Join a group</h1><div class="day">Type the code you were given</div></div>
+    <div class="stack">
+      ${S.err?`<div class="err">${esc(S.err)}</div>`:''}
+      <div class="card"><label class="lab">Group code</label>
+        <input id="f-code" placeholder="FAM-7K2X9M" style="text-align:center;font-size:1.5rem;letter-spacing:.06em;text-transform:uppercase">
+        <div class="note" style="margin-top:14px">Try <b>FAM-7K2X9M</b>, <b>GYM-4B8QZ1</b> or <b>OFF-9W3RT6</b> in this demo.</div></div>
+      <button class="big" onclick="doJoin()">Join</button>
+    </div></div>`;
+}
+function createScreen(backFn){
+  return `<div class="fade"><div class="pad"><button class="big alt small" onclick="${backFn}">${I('back',22)} Back</button>
+    <h1>New group</h1><div class="day">Give it a name your people will recognise</div></div>
+    <div class="stack"><div class="card"><label class="lab">Group name</label>
+      <input id="f-gname" placeholder="e.g. Family">
+      <div class="note" style="margin-top:14px">You will get a code to share with them.</div></div>
+    <button class="big" onclick="doCreate()">Create group</button></div></div>`;
+}
+
+const sharing=()=>{
+  const g=S.pendingGroup;if(!g)return welcome();
+  const opt=(k,l,d)=>`<button class="choice" style="min-height:100px" onclick="setShare('${k}')">${l}<span>${d}</span></button>`;
+  return `<div class="fade"><div class="pad"><h1>What can ${esc(g.name)} see?</h1>
+    <div class="day">You choose. You can change it later.</div></div>
+    <div class="stack">
+      ${opt('meals','Every meal I eat','They see each meal and its numbers')}
+      ${opt('totals','Only my daily total','One total per day, not each meal')}
+      ${opt('none','Nothing at all','They only see your name')}
+      <div class="card" style="background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.35)">
+        <div class="note" style="color:#fff;font-weight:700;font-size:1.08rem;margin-bottom:6px">Your photos are never shared</div>
+        <div class="note">Whichever you pick, nobody can see your meal photos.</div></div>
+      ${g.code&&g.fresh?`<div class="card"><label class="lab">Share this code with them</label><div class="codebox">${g.code}</div></div>`:''}
+    </div></div>`;
+};
+
+/* ================= APP SCREENS ================= */
+const today=()=>{
+  const g=S.goals,t=totals(),left=Math.max(g.cal-t.cal,0),meals=S.meals.filter(m=>m.dateKey===todayKey());
+  const m=(lbl,v,gl,c)=>`<div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+    <span style="font-size:1.12rem;font-weight:700;color:${c}">${lbl}</span>
+    <span class="lab" style="margin:0">${v} of ${gl}g</span></div>
+    <div class="mbar"><div style="width:${P(v,gl)}%;background:${c}"></div></div></div>`;
+  const gcards=S.groups.map((gr,i)=>{
+    const vis=gr.members.filter(x=>x.lvl!=='none');if(!vis.length)return'';
+    return `<div class="card" onclick="openGroup(${i})" style="cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 style="margin:0">${esc(gr.name)}</h2><span style="color:var(--t2)">${I('chev',24)}</span></div>
+      ${vis.map(x=>`<div style="display:flex;justify-content:space-between;padding:9px 0">
+        <span style="font-size:1.08rem;font-weight:600">${esc(x.n)}</span>
+        <span style="font-size:1.08rem;font-weight:800;color:var(--cal)">${x.cal} kcal</span></div>`).join('')}</div>`;
+  }).join('');
+
+  return `<div class="fade"><div class="pad"><h1>Hello, ${esc(S.name||'there')}</h1>
+    <div class="day">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div></div>
+    <div class="stack">
+      <div class="card" style="text-align:center;padding:26px 22px">
+        <div class="lab" style="margin:0">You have eaten</div>
+        <div style="font-size:3.7rem;font-weight:800;color:var(--cal);line-height:1.15;margin:4px 0">${t.cal}</div>
+        <div class="lab" style="margin-bottom:18px">of ${g.cal} calories</div>
+        <div class="bigbar"><div style="width:${P(t.cal,g.cal)}%;background:var(--cal)"></div></div>
+        <div style="font-size:1.25rem;font-weight:800;margin-top:16px;color:${t.cal>g.cal?'var(--carb)':'var(--pro)'}">
+          ${t.cal>g.cal?`${t.cal-g.cal} over your goal`:`${left} calories left today`}</div>
+      </div>
+      <div class="card"><h2>Protein, carbs and fat</h2>
+        ${m('Protein',t.pro,g.pro,C.pro)}${m('Carbs',t.carb,g.carb,C.carb)}${m('Fat',t.fat,g.fat,C.fat)}</div>
+      <div class="card"><h2>What you ate today</h2>
+        ${meals.length?meals.map(x=>`<div class="item">
+          <div style="flex:1;min-width:0"><div class="name">${esc(x.n)}</div>
+          <div class="meta">${x.time} · ${x.c} calories</div></div>
+          <button class="del" onclick="delMeal(${x.id})" aria-label="delete">${I('trash',22)}</button></div>`).join('')
+        :`<div class="note" style="text-align:center;padding:14px 0">Nothing yet today.<br><b>Tap the big + below to add your first meal.</b></div>`}
+      </div>
+      ${gcards}
+    </div></div>`;
+};
+
+const picker=()=>`<div class="fade"><div class="pad"><h1>Groups</h1><div class="day">Tap a group to see it</div></div>
+  <div class="stack">
+    ${S.groups.map((g,i)=>`<button class="choice" style="min-height:94px" onclick="openGroup(${i})">
+      <span style="display:flex;align-items:center;gap:14px;width:100%">
+        <span class="av" style="background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.4)">${esc(g.name[0]||'?')}</span>
+        <span style="flex:1"><span style="display:block;font-size:1.25rem">${esc(g.name)}</span>
+        <span style="font-size:.98rem;color:var(--t2);font-weight:600">${g.members.length+1} people</span></span>
+        <span style="color:var(--t2)">${I('chev',26)}</span></span></button>`).join('')}
+    <button class="big alt" onclick="S.joinMode='join';S.tab='gadd';R()">Join a group</button>
+    <button class="big alt" onclick="S.joinMode='create';S.tab='gadd';R()">Start a new group</button>
+  </div></div>`;
+
+const noGroups=()=>`<div class="fade"><div class="pad"><h1>Groups</h1>
+  <div class="day">Share your progress with family or friends</div></div>
+  <div class="stack">
+    <button class="choice" style="min-height:100px" onclick="S.joinMode='join';S.tab='gadd';R()">Join a group<span>Someone gave you a code</span></button>
+    <button class="choice" style="min-height:100px" onclick="S.joinMode='create';S.tab='gadd';R()">Start a new group<span>Invite your family or friends</span></button>
+  </div></div>`;
+
+const gadd=()=>S.joinMode==='create'?createScreen("S.tab='groups';S.joinMode=null;R()"):joinScreen("S.tab='groups';S.joinMode=null;S.err='';R()");
+
+const group=()=>{
+  const g=S.groups[S.gi];if(!g)return noGroups();
+  const multi=S.groups.length>1, t=totals();
+  const meals=g.members.filter(m=>m.lvl==='meals'), tot=g.members.filter(m=>m.lvl==='totals'), non=g.members.filter(m=>m.lvl==='none');
+  const mineLbl={meals:'They see every meal you eat',totals:'They see only your daily total',none:'They see nothing from you'}[g.mine];
+  return `<div class="fade"><div class="pad">
+    ${multi?`<button class="big alt small" onclick="S.tab='groups';R()">${I('back',22)} All groups</button>`:''}
+    <h1>${esc(g.name)}</h1><div class="day">${g.members.length+1} people · code ${g.code}</div></div>
+    <div class="stack">
+      <div class="card" style="border-color:rgba(167,139,250,.35)">
+        <div class="person"><span class="av" style="background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.4)">${esc((S.name||'Y')[0])}</span>
+        <span style="flex:1"><span style="display:block;font-size:1.2rem;font-weight:700">You</span>
+        <span style="display:block;font-size:.98rem;color:var(--t2);font-weight:600">${mineLbl}</span></span>
+        <span style="font-size:1.2rem;font-weight:800;color:var(--cal)">${g.mine==='none'?'—':t.cal+' kcal'}</span></div>
+        <button class="big plain" style="margin-top:6px;min-height:44px;justify-content:flex-start;padding:0" onclick="S.tab='me';R()">Change what they see →</button>
+      </div>
+      ${meals.map(m=>`<div class="card"><div class="person" style="margin-bottom:16px">
+        <span class="av">${esc(m.n[0])}</span>
+        <span><span style="display:block;font-size:1.25rem;font-weight:700">${esc(m.n)}</span>
+        <span style="display:block;font-size:1rem;color:var(--t2);font-weight:600">${m.cal} calories today</span></span></div>
+        ${m.meals.map(x=>`<div class="item"><div style="flex:1"><div class="name">${esc(x.n)}</div>
+          <div class="meta">${x.t} · ${x.c} calories</div></div></div>`).join('')}</div>`).join('')}
+      ${tot.map(m=>`<div class="card"><div class="person" style="margin-bottom:16px">
+        <span class="av">${esc(m.n[0])}</span>
+        <span><span style="display:block;font-size:1.25rem;font-weight:700">${esc(m.n)}</span>
+        <span style="display:block;font-size:1rem;color:var(--t2);font-weight:600">Shares totals only</span></span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+          <span class="lab" style="margin:0">Calories</span><span style="font-size:1.8rem;font-weight:800;color:var(--cal)">${m.cal}</span></div>
+        <div style="display:flex;gap:18px">${[['Protein',m.p,C.pro],['Carbs',m.cb,C.carb],['Fat',m.f,C.fat]].map(([l,v,c])=>
+          `<div style="flex:1"><div style="font-size:.98rem;color:var(--t2);font-weight:600">${l}</div>
+          <div style="font-size:1.25rem;font-weight:800;color:${c}">${v}g</div></div>`).join('')}</div></div>`).join('')}
+      ${non.length?`<div class="card">${non.map(m=>`<div class="person" style="padding:8px 0">
+        <span class="av" style="opacity:.55">${esc(m.n[0])}</span>
+        <span style="flex:1"><span style="display:block;font-size:1.12rem;font-weight:700">${esc(m.n)}</span>
+        <span style="display:block;font-size:.98rem;color:var(--t2);font-weight:600">Not sharing</span></span>
+        <span style="color:var(--t2)">${I('lock',24)}</span></div>`).join('')}</div>`:''}
+      <div class="card" style="background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.35)">
+        <div style="display:flex;gap:14px"><span style="color:var(--accent);flex-shrink:0">${I('lock',26)}</span>
+        <div><div style="font-size:1.08rem;font-weight:700;margin-bottom:5px">Photos stay private</div>
+        <div class="note">Nobody here can see anyone's meal photos. Only the numbers.</div></div></div></div>
+      <button class="big alt" onclick="S.joinMode='join';S.tab='gadd';R()">Join or start another group</button>
+      <button class="big danger" onclick="leaveGroup()">Leave this group</button>
+    </div></div>`;
+};
+
+const add=()=>{
+  if(S.step==='wait')return `<div class="fade" style="padding:110px 30px;text-align:center">
+    <div style="width:74px;height:74px;margin:0 auto 24px;border-radius:50%;border:5px solid rgba(167,139,250,.25);border-top-color:var(--accent);animation:sp 1s linear infinite"></div>
+    <div style="font-size:1.45rem;font-weight:800">Looking at your food…</div>
+    <div class="note" style="margin-top:10px;font-size:1.08rem">This takes a few seconds</div>
+    <style>@keyframes sp{to{transform:rotate(360deg)}}</style></div>`;
+  if(S.step==='check')return check();
+  if(S.step==='shot')return `<div class="fade"><div class="pad">
+    <button class="big alt small" onclick="S.step='pick';R()">${I('back',22)} Back</button>
+    <h1>${S.mode==='photo'?'Take a photo':'Type what you ate'}</h1></div>
+    <div class="stack">
+      ${S.mode==='photo'
+        ?`<div class="card" style="padding:0;overflow:hidden"><div style="aspect-ratio:1;background:#0E1014;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--t2)">
+           ${I('cam',62)}<div style="font-size:1.12rem;font-weight:700">Point at your plate</div></div></div>`
+        :`<div class="card"><textarea id="f-food" placeholder="Two rotis, dal and a bowl of curd"></textarea>
+           <div class="note" style="margin-top:14px">Write it the way you would say it.</div></div>`}
+      <button class="big" style="min-height:76px" onclick="analyze()">${S.mode==='photo'?'Take photo':'Done'}</button>
+    </div></div>`;
+  return `<div class="fade"><div class="pad"><h1>Add a meal</h1><div class="day">Choose one</div></div>
+    <div class="stack">
+      <button class="big" style="min-height:145px;flex-direction:column;gap:13px;font-size:1.45rem" onclick="S.mode='photo';S.step='shot';R()">${I('cam',50)} Take a photo</button>
+      <button class="big alt" style="min-height:145px;flex-direction:column;gap:13px;font-size:1.45rem" onclick="S.mode='text';S.step='shot';R()">${I('txt',50)} Type what you ate</button>
+    </div></div>`;
+};
+
+const check=()=>{
+  const e=S.estimate;if(!e){S.step='pick';return add()}
+  return `<div class="fade"><div class="pad"><h1>Is this right?</h1>
+    <div class="day">Change anything that looks wrong</div></div>
+    <div class="stack">
+      ${e.cf<.7?`<div class="err" style="color:#FCD34D;border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.12)">We are not very sure about this one — please check the numbers.</div>`:''}
+      <div class="card">
+        <div class="lab">We think this is</div>
+        <input id="e-name" value="${esc(e.n)}" style="font-size:1.15rem">
+        ${stepper('e-cal','Calories',e.c,'',0,4000,10)}
+        ${stepper('e-pro','Protein (g)',e.p,'',0,300)}
+        ${stepper('e-carb','Carbs (g)',e.cb,'',0,500)}
+        ${stepper('e-fat','Fat (g)',e.f,'',0,200)}
+      </div>
+      <button class="big" style="min-height:76px" onclick="saveMeal()">${I('check',26)} Save</button>
+      <button class="big alt" onclick="S.step='pick';S.estimate=null;R()">Start over</button>
+    </div></div>`;
+};
+
+const me=()=>{
+  const opt=(i,k,l,d)=>`<button class="choice ${S.groups[i].mine===k?'on':''}" style="min-height:84px" onclick="S.groups[${i}].mine='${k}';save();R();toast('Saved — ${esc(S.groups[i].name)} now sees this')">
+    <span style="display:flex;align-items:center;gap:10px;width:100%"><span style="flex:1">${l}</span>
+    ${S.groups[i].mine===k?`<span style="color:var(--accent)">${I('check',24)}</span>`:''}</span><span>${d}</span></button>`;
+  return `<div class="fade"><div class="pad"><h1>My settings</h1></div>
+    <div class="stack">
+      <div class="card person"><span class="av" style="width:62px;height:62px;font-size:1.5rem;background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.4)">${esc((S.name||'?')[0])}</span>
+        <span><span style="display:block;font-size:1.3rem;font-weight:800">${esc(S.name||'You')}</span>
+        <span style="display:block;font-size:.98rem;color:var(--t2);font-weight:600">${esc(S.email)}</span></span></div>
+      <div class="card"><h2>My daily goals</h2>
+        ${stepper('g-cal','Calories',S.goals.cal,'',800,5000,50)}
+        ${stepper('g-pro','Protein (g)',S.goals.pro,'',20,300,5)}
+        ${stepper('g-carb','Carbs (g)',S.goals.carb,'',20,600,5)}
+        ${stepper('g-fat','Fat (g)',S.goals.fat,'',10,200,5)}
+        <button class="big" style="margin-top:18px" onclick="saveGoals()">Save goals</button>
+        <button class="big plain" onclick="applySuggest()">Suggest goals for me</button>
+      </div>
+      ${S.groups.map((g,i)=>`<div class="card"><h2>What ${esc(g.name)} can see</h2>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${opt(i,'meals','Every meal I eat','They see each meal and its numbers')}
+          ${opt(i,'totals','Only my daily total','One total per day, not each meal')}
+          ${opt(i,'none','Nothing at all','They see my name only')}
+        </div>
+        <div class="note" style="margin-top:14px">Photos are never shared, whichever you choose.</div></div>`).join('')}
+      <div class="card"><h2>Photos</h2>
+        <div class="note">Meal photos are deleted after 30 days. Your food history is kept.</div></div>
+      <button class="big alt" style="color:var(--fat)" onclick="signOut()">Sign out</button>
+    </div></div>`;
+};
+
+/* ================= ACTIONS ================= */
+function go(s){S.screen=s;S.err='';save();R()}
+function doSignIn(){
+  S.email=val('f-email');
+  if(!S.email||!val('f-pw')){S.err="That email and password don't match. Please try again.";R();return}
+  S.authed=true;S.name=S.name||S.email.split('@')[0];S.screen='app';S.tab='today';save();R();
+}
+function doSignUp(){
+  S.name=val('f-name');S.email=val('f-email');
+  if(!S.name){S.err='Please type your name.';R();return}
+  if(!S.email.includes('@')){S.err='Please type a proper email address.';R();return}
+  if(val('f-pw').length<8){S.err='Your password needs at least 8 letters.';R();return}
+  go('about');
+}
+function saveAbout(read){
+  if(read){S.age=parseInt(val('f-age'))||S.age;S.weight=parseInt(val('f-wt'))||S.weight;S.height=parseInt(val('f-ht'))||S.height;
+    S.goals=suggestGoals();}
+  go('grpsetup');
+}
+function doJoin(){
+  const code=val('f-code').toUpperCase();
+  const known=DEMO_MEMBERS[code];
+  if(!known){S.err='We could not find that code. Please check and try again.';R();return}
+  if(S.groups.some(g=>g.code===code)){S.err='You are already in that group.';R();return}
+  S.pendingGroup={name:known.name,code,members:clone(known.members),fresh:false};
+  S.err='';S.joinMode=null;
+  if(S.authed&&S.screen==='app'){S.screen='sharing-app'}else{S.screen='sharing'}
+  save();R();
+}
+function doCreate(){
+  const name=val('f-gname')||'My group';
+  S.pendingGroup={name,code:newCode(),members:[],fresh:true};
+  S.joinMode=null;
+  if(S.authed&&S.screen==='app'){S.screen='sharing-app'}else{S.screen='sharing'}
+  save();R();
+}
+function setShare(k){
+  const g=S.pendingGroup;g.mine=k;delete g.fresh;
+  S.groups.push(g);S.pendingGroup=null;
+  if(S.screen==='sharing-app'){S.screen='app';S.tab='groups';S.gi=S.groups.length-1;S.tab=S.groups.length===1?'group':'groups';}
+  else finishSetup(true);
+  save();R();toast(`You joined ${g.name}`);
+}
+function finishSetup(skipToast){
+  S.authed=true;S.screen='app';S.tab='today';save();R();
+  if(!skipToast)toast(`Welcome, ${S.name}!`);
+}
+function openGroup(i){S.gi=i;S.tab='group';save();R()}
+function openGroupsTab(){
+  if(S.groups.length===0)S.tab='groups';
+  else if(S.groups.length===1){S.gi=0;S.tab='group'}
+  else S.tab='groups';
+  R();
+}
+function leaveGroup(){
+  const g=S.groups[S.gi];
+  if(!confirm(`Leave ${g.name}? They will no longer see anything from you.`))return;
+  S.groups.splice(S.gi,1);S.gi=0;S.tab='groups';save();R();toast(`You left ${g.name}`);
+}
+function analyze(){
+  const text=S.mode==='text'?val('f-food'):'';
+  if(S.mode==='text'&&!text){toast('Please type what you ate first');return}
+  S.step='wait';R();
+  setTimeout(()=>{S.estimate=fakeAI(S.mode,text);S.step='check';save();R()},1400);
+}
+function saveMeal(){
+  const e=S.estimate;
+  const meal={id:Date.now(),n:val('e-name')||e.n,
+    c:parseInt(val('e-cal'))||0,p:parseInt(val('e-pro'))||0,cb:parseInt(val('e-carb'))||0,f:parseInt(val('e-fat'))||0,
+    time:nowT(),dateKey:todayKey()};
+  S.meals.unshift(meal);S.estimate=null;S.step='pick';S.tab='today';save();R();
+  toast(`Saved — ${meal.c} calories added`);
+}
+function delMeal(id){
+  const m=S.meals.find(x=>x.id===id);
+  if(!confirm(`Remove "${m.n}"?`))return;
+  S.meals=S.meals.filter(x=>x.id!==id);save();R();toast('Meal removed');
+}
+function saveGoals(){
+  S.goals={cal:parseInt(val('g-cal'))||S.goals.cal,pro:parseInt(val('g-pro'))||S.goals.pro,
+    carb:parseInt(val('g-carb'))||S.goals.carb,fat:parseInt(val('g-fat'))||S.goals.fat};
+  save();R();toast('Goals saved');
+}
+function applySuggest(){
+  S.goals=suggestGoals();save();R();
+  toast(`Suggested for age ${S.age}: ${S.goals.cal} calories a day`);
+}
+function signOut(){if(!confirm('Sign out?'))return;S.authed=false;S.screen='welcome';save();R()}
+
+/* ================= SHELL ================= */
+function nav(){
+  const b=(k,i,l,fn)=>`<button class="${(S.tab===k||(k==='groups'&&(S.tab==='group'||S.tab==='gadd')))?'on':''}" onclick="${fn}">${I(i)}<span>${l}</span></button>`;
+  return b('today','today','Today',"S.tab='today';R()")
+    + b('groups','groups','Groups',"openGroupsTab()")
+    + `<button class="add" onclick="S.step='pick';S.tab='add';R()">${I('plus',28)}<span>Add</span></button>`
+    + b('me','me','Me',"S.tab='me';R()");
+}
+function R(){
+  const view=document.getElementById('view'),navEl=document.getElementById('nav'),phone=document.getElementById('phone');
+  if(S.screen!=='app'){
+    navEl.style.display='none';phone.classList.remove('tabbed');
+    const map={welcome,signin,forgot,sent,signup,about,grpsetup:grpSetup,sharing,'sharing-app':sharing};
+    view.innerHTML=(map[S.screen]||welcome)();
+  }else{
+    navEl.style.display='flex';phone.classList.add('tabbed');
+    const map={today,groups:()=>S.groups.length?picker():noGroups(),group,gadd,add,me};
+    view.innerHTML=(map[S.tab]||today)();
+    navEl.innerHTML=nav();
+  }
+  view.scrollTop=0;
+}
+R();
+</script>
+</body>
+</html>
