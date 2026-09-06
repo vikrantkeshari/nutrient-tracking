@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nutrient Tracking — Design v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0C10; --surface:#14161C; --surface-2:#1B1E26;
+  --line:rgba(255,255,255,.07); --line-strong:rgba(255,255,255,.12);
+  --accent:#8B5CF6; --accent-dim:rgba(139,92,246,.14);
+  --cal:#06B6D4; --pro:#10B981; --carb:#F59E0B; --fat:#EF4444;
+  --t1:#F4F5F7; --t2:#9BA1AC; --t3:#646B78;
+  --r:14px; --safe:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#000;font-family:Outfit,-apple-system,system-ui,sans-serif;color:var(--t1);line-height:1.45}
+.phone{max-width:430px;min-height:100vh;margin:0 auto;background:var(--bg);position:relative;display:flex;flex-direction:column;padding-bottom:calc(78px + var(--safe));box-shadow:0 0 60px rgba(0,0,0,.9)}
+.scroll{flex:1;overflow-y:auto}
+::-webkit-scrollbar{width:0}
+
+/* ---- primitives ---- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card.tight{padding:14px}
+.pad{padding:18px 16px 8px}
+.h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:2px}
+.sub{font-size:.78rem;color:var(--t3);margin-bottom:18px}
+.h2{font-size:.72rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px}
+.row{display:flex;align-items:center;justify-content:space-between}
+.muted{color:var(--t2);font-size:.8rem}
+.tiny{font-size:.68rem;color:var(--t3)}
+.chip{font-size:.65rem;padding:3px 8px;border-radius:6px;background:var(--surface-2);color:var(--t2);border:1px solid var(--line);font-weight:600}
+.chip.acc{background:var(--accent-dim);color:#C4B5FD;border-color:rgba(139,92,246,.25)}
+.chip.ok{background:rgba(16,185,129,.12);color:#6EE7B7;border-color:rgba(16,185,129,.2)}
+.chip.warn{background:rgba(245,158,11,.12);color:#FCD34D;border-color:rgba(245,158,11,.2)}
+.btn{width:100%;padding:13px;border-radius:11px;border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--surface-2);color:var(--t1);border:1px solid var(--line-strong)}
+.btn:active{transform:scale(.985)}
+input,select,textarea{width:100%;padding:11px;background:#0E1014;border:1px solid var(--line);border-radius:10px;color:var(--t1);font-family:inherit;font-size:.85rem;outline:none}
+input:focus,textarea:focus{border-color:rgba(139,92,246,.5)}
+.stack{display:flex;flex-direction:column;gap:12px;padding:0 16px 20px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+
+/* ---- nav ---- */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:calc(72px + var(--safe));padding-bottom:var(--safe);background:rgba(11,12,16,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;z-index:50}
+.nav button{background:none;border:none;color:var(--t3);font-family:inherit;font-size:.6rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1;padding:6px 0}
+.nav button.on{color:var(--accent)}
+.nav .fab{flex:0 0 52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;justify-content:center;box-shadow:0 6px 20px rgba(139,92,246,.4)}
+svg.i{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- rings ---- */
+.rings{display:flex;flex-direction:column;align-items:center;gap:16px}
+.ringwrap{position:relative;width:190px;height:190px}
+.ringwrap svg{transform:rotate(-90deg)}
+.ringctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:5px}
+.bar>div{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* ---- misc ---- */
+.seg{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px}
+.seg button{flex:1;padding:8px;border:none;background:none;color:var(--t3);font-family:inherit;font-size:.75rem;font-weight:600;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--surface-2);color:var(--t1)}
+.list>*+*{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.lvl{display:flex;gap:6px}
+.lvl button{flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--t3);font-family:inherit;font-size:.66rem;font-weight:700;cursor:pointer}
+.lvl button.on{background:var(--accent-dim);border-color:rgba(139,92,246,.4);color:#C4B5FD}
+.hide{display:none}
+.demo{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99;display:flex;gap:6px;background:rgba(20,22,28,.95);border:1px solid var(--line-strong);border-radius:20px;padding:5px;backdrop-filter:blur(10px)}
+.demo button{border:none;background:none;color:var(--t3);font-family:inherit;font-size:.62rem;font-weight:700;padding:5px 11px;border-radius:14px;cursor:pointer}
+.demo button.on{background:var(--accent);color:#fff}
+.fade{animation:f .28s ease}
+@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="demo">
+  <button id="d1" class="on" onclick="setGroups(1)">1 group</button>
+  <button id="d3" onclick="setGroups(3)">3 groups</button>
+</div>
+
+<div class="phone">
+  <div class="scroll" id="view"></div>
+  <div class="nav" id="nav"></div>
+</div>
+
+<script>
+/* ============ state ============ */
+const S = {
+  tab:'today', groupCount:1, activeGroup:0, logStep:'input', logMode:'photo',
+  macro:'protein', me:'Vikrant',
+  goals:{cal:2200,pro:165,carb:230,fat:73},
+  today:{cal:1420,pro:98,carb:142,fat:47},
+  meals:[
+    {n:'Grilled Chicken & Quinoa',c:520,p:48,cb:52,f:12,t:'1:15 PM',conf:.94,ed:false},
+    {n:'Greek Yogurt & Berries',c:210,p:20,cb:24,f:5,t:'10:30 AM',conf:.88,ed:true},
+    {n:'Masala Oats & Two Eggs',c:690,p:30,cb:66,f:30,t:'8:05 AM',conf:.91,ed:false}
+  ],
+  groups:[
+    {name:'Keshari Family',type:'family',code:'FAM-7K2X9M',myLevel:'detailed',members:[
+      {n:'Priya',lvl:'detailed',cal:1180,pro:72,carb:120,fat:41,meals:[
+        {n:'Paneer Salad Bowl',c:410,p:26,cb:28,f:22,t:'1:40 PM'},
+        {n:'Poha & Chai',c:340,p:9,cb:58,f:9,t:'8:30 AM'}]},
+      {n:'Dad',lvl:'totals',cal:1890,pro:104,carb:210,fat:62,meals:[]},
+      {n:'Liam',lvl:'none',cal:null,meals:[]}
+    ]},
+    {name:'Gym Crew',type:'gym',code:'GYM-4B8QZ1',myLevel:'totals',members:[
+      {n:'Rahul',lvl:'totals',cal:2640,pro:198,carb:242,fat:78,meals:[]},
+      {n:'Sneha',lvl:'totals',cal:1720,pro:141,carb:150,fat:52,meals:[]},
+      {n:'Arjun',lvl:'totals',cal:2210,pro:176,carb:198,fat:61,meals:[]}
+    ]},
+    {name:'Office Step-Up',type:'office',code:'OFF-9W3RT6',myLevel:'none',members:[
+      {n:'Meera',lvl:'totals',cal:1540,pro:88,carb:168,fat:49,meals:[]},
+      {n:'Tom',lvl:'none',cal:null,meals:[]}
+    ]}
+  ]
+};
+const C={cal:'var(--cal)',pro:'var(--pro)',carb:'var(--carb)',fat:'var(--fat)'};
+const ico={
+  today:'<path d="M3 12h4l3 8 4-16 3 8h4"/>',
+  groups:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  trends:'<path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>',
+  profile:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  cam:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/>',
+  txt:'<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',
+  chev:'<path d="M9 18l6-6-6-6"/>',
+  back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/>',
+  trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  sparkle:'<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/>'
+};
+const I=(k,s=20)=>`<svg class="i" viewBox="0 0 24 24" style="width:${s}px;height:${s}px">${ico[k]}</svg>`;
+const pct=(a,b)=>Math.min(a/b*100,100);
+
+/* ============ screens ============ */
+function today(){
+  const g=S.goals,t=S.today;
+  const R=(r,col,p)=>{const c=2*Math.PI*r;return `<circle cx="95" cy="95" r="${r}" stroke="rgba(255,255,255,.05)" stroke-width="11" fill="none"/><circle cx="95" cy="95" r="${r}" stroke="${col}" stroke-width="11" stroke-linecap="round" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p/100)}"/>`};
+  const bar=(lbl,v,gl,col)=>`<div><div class="row" style="font-size:.76rem"><span style="color:${col};font-weight:700">${lbl}</span><span class="muted">${v} / ${gl}g</span></div><div class="bar"><div style="width:${pct(v,gl)}%;background:${col}"></div></div></div>`;
+
+  // group snapshot — only members sharing something
+  const gs=S.groups.slice(0,S.groupCount).map(gr=>{
+    const vis=gr.members.filter(m=>m.lvl!=='none');
+    if(!vis.length)return'';
+    return `<div class="card tight" onclick="go('group',${S.groups.indexOf(gr)})" style="cursor:pointer">
+      <div class="row" style="margin-bottom:10px"><span style="font-size:.8rem;font-weight:700">${gr.name}</span><span style="color:var(--t3)">${I('chev',14)}</span></div>
+      ${vis.map(m=>`<div class="row" style="padding:3px 0"><span class="muted" style="font-size:.76rem">${m.n}</span><span style="font-size:.76rem;font-weight:700;color:var(--cal)">${m.cal} kcal</span></div>`).join('')}
+    </div>`}).join('');
+
+  return `<div class="fade">
+    <div class="pad"><div class="row"><div><div class="h1">Today</div><div class="sub">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}</div></div><div class="avatar">${S.me[0]}</div></div></div>
+    <div class="stack">
+      <div class="card rings">
+        <div class="ringwrap"><svg width="190" height="190" viewBox="0 0 190 190">
+          ${R(78,C.pro,pct(S.today.pro,g.pro))}${R(63,C.carb,pct(S.today.carb,g.carb))}${R(48,C.fat,pct(S.today.fat,g.fat))}
+        </svg>
+        <div class="ringctr"><div class="tiny" style="text-transform:uppercase;letter-spacing:.09em">Calories</div>
+          <div style="font-size:1.9rem;font-weight:800;color:var(--cal);line-height:1.1">${t.cal}</div>
+          <div class="tiny">of ${g.cal} kcal</div>
+          <div class="chip ok" style="margin-top:6px">${g.cal-t.cal} left</div></div></div>
+        <div style="width:100%;display:flex;flex-direction:column;gap:9px">
+          ${bar('Protein',t.pro,g.pro,C.pro)}${bar('Carbs',t.carb,g.carb,C.carb)}${bar('Fat',t.fat,g.fat,C.fat)}
+        </div>
+      </div>
+
+      <div>
+        <div class="h2" style="padding:4px 2px">Today's meals</div>
+        <div class="card list">
+          ${S.meals.map(m=>`<div class="row">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.n}</div>
+              <div class="tiny" style="margin-top:2px">${m.t} · ${m.c} kcal · ${m.p}g P · ${m.cb}g C · ${m.f}g F</div>
+            </div>
+            ${m.ed?'<span class="chip" style="margin-left:8px">edited</span>':''}
+            <span style="color:var(--t3);margin-left:8px">${I('chev',14)}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      ${gs?`<div><div class="h2" style="padding:4px 2px">Groups today</div><div style="display:flex;flex-direction:column;gap:10px">${gs}</div></div>`:''}
+    </div></div>`;
+}
+
+function groupPicker(){
+  return `<div class="fade">
+    <div class="pad"><div class="h1">Groups</div><div class="sub">Choose a group to view</div></div>
+    <div class="stack">
+      ${S.groups.slice(0,S.groupCount).map((g,i)=>{
+        const vis=g.members.filter(m=>m.lvl!=='none').length;
+        const lc={detailed:'ok',totals:'acc',none:''}[g.myLevel];
+        return `<div class="card" onclick="go('group',${i})" style="cursor:pointer">
+          <div class="row">
+            <div style="display:flex;gap:12px;align-items:center;min-width:0">
+              <div class="avatar" style="background:var(--accent-dim);border-color:rgba(139,92,246,.3)">${g.name[0]}</div>
+              <div style="min-width:0">
+                <div style="font-size:.92rem;font-weight:700">${g.name}</div>
+                <div class="tiny" style="margin-top:2px">${g.members.length} members · ${vis} sharing</div>
+              </div>
+            </div>
+            <span style="color:var(--t3)">${I('chev',16)}</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:6px;align-items:center">
+            <span class="tiny">You share:</span>
+            <span class="chip ${lc}">${g.myLevel==='none'?'Nothing':g.myLevel==='totals'?'Totals only':'Full meals'}</span>
+          </div>
+        </div>`}).join('')}
+      <button class="btn ghost" onclick="alert('Join or create a group')">+ Join or create a group</button>
+    </div></div>`;
+}
+
+function groupDetail(){
+  const g=S.groups[S.activeGroup];
+  const multi=S.groupCount>1;
+  const det=g.members.filter(m=>m.lvl==='detailed');
+  const tot=g.members.filter(m=>m.lvl==='totals');
+  const non=g.members.filter(m=>m.lvl==='none');
+
+  const totCard=m=>`<div class="card tight">
+    <div class="row" style="margin-bottom:11px">
+      <div style="display:flex;gap:9px;align-items:center"><div class="avatar" style="width:28px;height:28px;font-size:.7rem">${m.n[0]}</div><span style="font-size:.85rem;font-weight:700">${m.n}</span></div>
+      <span style="font-size:.95rem;font-weight:800;color:var(--cal)">${m.cal}<span class="tiny" style="font-weight:500"> kcal</span></span>
+    </div>
+    <div style="display:flex;gap:14px">
+      ${[['P',m.pro,C.pro],['C',m.carb,C.carb],['F',m.fat,C.fat]].map(([l,v,c])=>
+        `<div style="flex:1"><div class="row" style="font-size:.66rem"><span style="color:${c};font-weight:700">${l}</span><span class="tiny">${v}g</span></div><div class="bar" style="height:3px"><div style="width:${Math.min(v/2,100)}%;background:${c}"></div></div></div>`).join('')}
+    </div></div>`;
+
+  return `<div class="fade">
+    <div class="pad">
+      ${multi?`<button class="btn ghost" style="width:auto;padding:6px 12px;font-size:.72rem;display:flex;gap:6px;align-items:center;margin-bottom:12px" onclick="go('groups')">${I('back',13)} All groups</button>`:''}
+      <div class="h1">${g.name}</div><div class="sub">${g.members.length} members · code ${g.code}</div>
+    </div>
+    <div class="stack">
+      ${det.length?`<div><div class="h2" style="padding:2px">Meals shared with you</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+        ${det.map(m=>`<div class="card tight">
+          <div class="row" style="margin-bottom:10px">
+            <div style="display:flex;gap:9px;align-items:center"><div class="avatar" style="width:28px;height:28px;font-size:.7rem">${m.n[0]}</div><span style="font-size:.85rem;font-weight:700">${m.n}</span></div>
+            <span class="tiny">${m.cal} kcal today</span></div>
+          <div class="list">${m.meals.map(x=>`<div class="row"><div style="flex:1;min-width:0">
+            <div style="font-size:.8rem;font-weight:600">${x.n}</div>
+            <div class="tiny" style="margin-top:2px">${x.t} · ${x.c} kcal · ${x.p}g P · ${x.cb}g C · ${x.f}g F</div>
+          </div></div>`).join('')}</div>
+        </div>`).join('')}</div></div>`:''}
+
+      ${tot.length?`<div><div class="h2" style="padding:2px">Daily totals</div>
+        <div style="display:flex;flex-direction:column;gap:10px">${tot.map(totCard).join('')}</div></div>`:''}
+
+      ${non.length?`<div><div class="h2" style="padding:2px">Not sharing</div>
+        <div class="card tight list">${non.map(m=>`<div class="row">
+          <div style="display:flex;gap:9px;align-items:center"><div class="avatar" style="width:28px;height:28px;font-size:.7rem;opacity:.5">${m.n[0]}</div><span class="muted" style="font-size:.82rem">${m.n}</span></div>
+          <span style="color:var(--t3)">${I('lock',14)}</span></div>`).join('')}</div></div>`:''}
+
+      <div class="card tight" style="border-color:rgba(139,92,246,.2);background:var(--accent-dim)">
+        <div style="display:flex;gap:9px"><span style="color:#C4B5FD;flex-shrink:0">${I('lock',15)}</span>
+        <div><div style="font-size:.76rem;font-weight:700;color:#C4B5FD">Photos are never shared</div>
+        <div class="tiny" style="margin-top:3px;line-height:1.5">Meal photos stay private to whoever logged them. Groups only ever see macro numbers.</div></div></div>
+      </div>
+    </div></div>`;
+}
+
+function logScreen(){
+  if(S.logStep==='review')return review();
+  if(S.logStep==='analyzing')return `<div class="fade" style="padding:80px 24px;text-align:center">
+    <div style="width:60px;height:60px;margin:0 auto 20px;border-radius:50%;border:3px solid rgba(139,92,246,.2);border-top-color:var(--accent);animation:spin 1s linear infinite"></div>
+    <div style="font-size:1rem;font-weight:700">Analyzing your meal</div>
+    <div class="sub" style="margin-top:6px">Estimating macros from the photo…</div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style></div>`;
+
+  const mode=(k,ic,lbl)=>`<button class="${S.logMode===k?'on':''}" onclick="S.logMode='${k}';render()">${I(ic,17)}<span style="margin-top:3px;display:block">${lbl}</span></button>`;
+  return `<div class="fade">
+    <div class="pad"><div class="h1">Log a meal</div><div class="sub">Snap it, describe it, or upload</div></div>
+    <div class="stack">
+      <div class="seg" style="padding:5px">${mode('photo','cam','Camera')}${mode('upload','up','Upload')}${mode('text','txt','Describe')}</div>
+
+      ${S.logMode==='text'?`<div class="card">
+        <div class="h2">What did you eat?</div>
+        <textarea rows="4" placeholder="e.g. two rotis, dal, half cup rice and a bowl of curd"></textarea>
+      </div>`:`<div class="card" style="padding:0;overflow:hidden">
+        <div style="aspect-ratio:1;background:#0E1014;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-bottom:1px solid var(--line)">
+          <span style="color:var(--t3)">${I(S.logMode==='photo'?'cam':'up',40)}</span>
+          <div class="tiny">${S.logMode==='photo'?'Camera preview':'Tap to choose a photo'}</div>
+        </div>
+        <div style="padding:12px"><div class="tiny" style="line-height:1.5">Compressed to ~25 KB before upload. Stored privately for 30 days, then deleted.</div></div>
+      </div>`}
+
+      ${S.logMode!=='text'?`<div class="card"><div class="h2">Add a note (optional)</div><input placeholder="e.g. large portion, no oil"></div>`:''}
+      <button class="btn" onclick="S.logStep='analyzing';render();setTimeout(()=>{S.logStep='review';render()},1400)">${S.logMode==='text'?'Estimate macros':'Analyze meal'}</button>
+    </div></div>`;
+}
+
+function review(){
+  const f=(l,v,c,u)=>`<div><label class="tiny" style="display:block;margin-bottom:5px">${l}</label>
+    <div style="position:relative"><input value="${v}" type="number" style="padding-right:34px;border-left:2px solid ${c}">
+    <span class="tiny" style="position:absolute;right:11px;top:50%;transform:translateY(-50%)">${u}</span></div></div>`;
+  return `<div class="fade">
+    <div class="pad"><div class="h1">Review & tweak</div><div class="sub">Correct anything the AI got wrong</div></div>
+    <div class="stack">
+      <div class="card tight" style="background:var(--accent-dim);border-color:rgba(139,92,246,.22)">
+        <div class="row"><div style="display:flex;gap:8px;align-items:center"><span style="color:#C4B5FD">${I('sparkle',16)}</span>
+          <span style="font-size:.78rem;font-weight:700;color:#C4B5FD">AI estimate</span></div>
+          <span class="chip ok">94% confident</span></div>
+        <div class="tiny" style="margin-top:8px;line-height:1.5">Looks like a grilled chicken breast (~150g) with quinoa and steamed broccoli. Estimated from portion size relative to the plate.</div>
+      </div>
+
+      <div class="card">
+        <div class="h2">Meal</div>
+        <input value="Grilled Chicken & Quinoa" style="margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+          ${f('Calories',520,C.cal,'kcal')}${f('Protein',48,C.pro,'g')}${f('Carbs',52,C.carb,'g')}${f('Fat',12,C.fat,'g')}
+        </div>
+        <div class="tiny" style="margin-top:12px;line-height:1.5">Edits are saved alongside the original AI estimate so accuracy can be tracked over time.</div>
+      </div>
+
+      <button class="btn" onclick="S.logStep='input';S.tab='today';render()">Save meal</button>
+      <button class="btn ghost" onclick="S.logStep='input';render()">Back</button>
+    </div></div>`;
+}
+
+function trends(){
+  const g=S.goals,key={calories:'cal',protein:'pro',carbs:'carb',fat:'fat'}[S.macro]||'pro';
+  const goal={cal:g.cal,pro:g.pro,carb:g.carb,fat:g.fat}[key];
+  let seed=key.length*7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  const pts=Array.from({length:30},()=>goal*(.55+rnd()*.7));
+  const max=Math.max(...pts,goal)*1.15;
+  const path=pts.map((v,i)=>`${(i/(pts.length-1))*340},${110-(v/max)*95}`).join(' ');
+  const gy=110-(goal/max)*95;
+  const avg=Math.round(pts.reduce((a,b)=>a+b)/pts.length);
+  const col={cal:C.cal,pro:C.pro,carb:C.carb,fat:C.fat}[key];
+
+  return `<div class="fade">
+    <div class="pad"><div class="h1">Trends</div><div class="sub">Last 30 days</div></div>
+    <div class="stack">
+      <div class="seg">${['protein','calories','carbs','fat'].map(m=>`<button class="${S.macro===m?'on':''}" onclick="S.macro='${m}';render()" style="text-transform:capitalize">${m}</button>`).join('')}</div>
+
+      <div class="card">
+        <div class="row" style="margin-bottom:14px">
+          <div><div class="tiny">Daily average</div><div style="font-size:1.5rem;font-weight:800;color:${col}">${avg}<span class="tiny" style="font-weight:500"> ${key==='cal'?'kcal':'g'}</span></div></div>
+          <span class="chip ${avg>=goal*.9?'ok':'warn'}">${avg>=goal*.9?'On track':'Below goal'}</span>
+        </div>
+        <svg width="100%" height="120" viewBox="0 0 340 120" style="overflow:visible">
+          <line x1="0" y1="${gy}" x2="340" y2="${gy}" stroke="${col}" stroke-width="1" stroke-dasharray="3 4" opacity=".45"/>
+          <polyline fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" points="${path}"/>
+        </svg>
+        <div class="row tiny" style="margin-top:6px"><span>30 days ago</span><span>Goal ${goal}</span><span>Today</span></div>
+      </div>
+
+      ${S.groupCount>0?`<div><div class="h2" style="padding:2px">Group comparison</div>
+      <div class="card list">
+        ${[{n:'You',v:S.today[key],me:1},...S.groups.slice(0,S.groupCount).flatMap(gr=>gr.members.filter(m=>m.lvl!=='none').map(m=>({n:m.n,v:m[key==='cal'?'cal':key]||0})))]
+          .map(x=>`<div><div class="row" style="font-size:.78rem"><span style="font-weight:${x.me?700:500};color:${x.me?col:'var(--t2)'}">${x.n}</span><span class="tiny">${x.v}${key==='cal'?' kcal':'g'}</span></div>
+          <div class="bar" style="height:4px"><div style="width:${Math.min(x.v/(goal*1.4)*100,100)}%;background:${x.me?col:'rgba(255,255,255,.18)'}"></div></div></div>`).join('')}
+      </div></div>`:''}
+    </div></div>`;
+}
+
+function profile(){
+  const lvlBtn=(gi,l,lbl)=>`<button class="${S.groups[gi].myLevel===l?'on':''}" onclick="S.groups[${gi}].myLevel='${l}';render()">${lbl}</button>`;
+  const goal=(l,k,u)=>`<div><label class="tiny" style="display:block;margin-bottom:5px">${l}</label><input value="${S.goals[k]}" type="number"><span class="tiny">${u}</span></div>`;
+  return `<div class="fade">
+    <div class="pad"><div class="h1">Profile</div><div class="sub">Goals, sharing and account</div></div>
+    <div class="stack">
+      <div class="card" style="display:flex;gap:13px;align-items:center">
+        <div class="avatar" style="width:46px;height:46px;font-size:1.05rem;background:var(--accent-dim);border-color:rgba(139,92,246,.3)">${S.me[0]}</div>
+        <div><div style="font-weight:700;font-size:1rem">${S.me}</div><div class="tiny">vikrant.k397@gmail.com</div></div>
+      </div>
+
+      <div class="card">
+        <div class="h2">Daily goals</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+          ${goal('Calories','cal','kcal')}${goal('Protein','pro','g')}${goal('Carbs','carb','g')}${goal('Fat','fat','g')}
+        </div>
+        <button class="btn ghost" style="margin-top:14px;font-size:.76rem;padding:10px">Suggest from age, weight & height</button>
+      </div>
+
+      <div>
+        <div class="h2" style="padding:2px">Sharing per group</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+        ${S.groups.slice(0,S.groupCount).map((g,i)=>`<div class="card tight">
+          <div class="row" style="margin-bottom:11px"><span style="font-size:.85rem;font-weight:700">${g.name}</span><span class="tiny">${g.members.length} members</span></div>
+          <div class="lvl">${lvlBtn(i,'detailed','Full meals')}${lvlBtn(i,'totals','Totals only')}${lvlBtn(i,'none','Nothing')}</div>
+          <div class="tiny" style="margin-top:9px;line-height:1.5">${
+            g.myLevel==='detailed'?'They see each meal you log and its macros. Never your photos.':
+            g.myLevel==='totals'?'They see your daily calorie and macro totals only — not individual meals.':
+            'They see that you are a member. No intake data at all.'}</div>
+        </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card tight">
+        <div class="row"><span class="muted" style="font-size:.82rem">Photo retention</span><span class="chip">30 days</span></div>
+        <div class="tiny" style="margin-top:7px;line-height:1.5">Meal photos are deleted after 30 days. Your macro history is kept indefinitely.</div>
+      </div>
+
+      <button class="btn ghost" style="color:var(--fat)">Sign out</button>
+    </div></div>`;
+}
+
+/* ============ shell ============ */
+function nav(){
+  const b=(k,ic,lbl)=>`<button class="${S.tab===k?'on':''}" onclick="go('${k}')">${I(ic)}<span>${lbl}</span></button>`;
+  const gTab=S.tab==='groups'||S.tab==='group';
+  return `${b('today','today','Today')}
+    <button class="${gTab?'on':''}" onclick="go('groups')">${I('groups')}<span>Groups</span></button>
+    <button class="fab" onclick="S.logStep='input';go('log')">${I('plus',24)}</button>
+    ${b('trends','trends','Trends')}${b('profile','profile','Profile')}`;
+}
+function go(tab,gi){
+  if(tab==='groups'){
+    // ONE group → skip the picker entirely. TWO+ → show picker.
+    if(S.groupCount===1){S.activeGroup=0;S.tab='group'}else{S.tab='groups'}
+  } else if(tab==='group'){S.activeGroup=gi;S.tab='group'}
+  else S.tab=tab;
+  document.querySelector('.scroll').scrollTop=0;render();
+}
+function setGroups(n){
+  S.groupCount=n;S.activeGroup=0;
+  d1.className=n===1?'on':'';d3.className=n===3?'on':'';
+  if(S.tab==='group'||S.tab==='groups')go('groups');else render();
+}
+function render(){
+  const v={today,groups:groupPicker,group:groupDetail,log:logScreen,trends,profile}[S.tab]||today;
+  document.getElementById('view').innerHTML=v();
+  document.getElementById('nav').innerHTML=nav();
+}
+render();
+</script>
+</body>
+</html>

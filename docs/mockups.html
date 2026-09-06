@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nutrient Tracking Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+/* ============================================================
+   GALLERY CHROME
+   Single-theme dark on purpose: this documents a dark-only app.
+   ============================================================ */
+:root{
+  --g-bg:#08090C;
+  --g-surface:#101219;
+  --g-surface-2:#171A23;
+  --g-line:rgba(255,255,255,.10);
+  --g-line-2:rgba(255,255,255,.06);
+  --g-t1:#F2F4F8;
+  --g-t2:#98A1B2;
+  --g-t3:#6B7382;
+  --g-accent:#A78BFA;
+  --g-built:#34D399;
+  --g-plan:#FBBF24;
+  --g-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --g-disp:'Bricolage Grotesque','Outfit',system-ui,sans-serif;
+  --g-body:'Outfit',system-ui,-apple-system,sans-serif;
+  --scale:.82;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--g-bg);color:var(--g-t1);
+  font-family:var(--g-body);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--g-accent);text-decoration:none;border-bottom:1px solid rgba(167,139,250,.3)}
+a:hover{border-bottom-color:var(--g-accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--g-accent);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:1500px;margin:0 auto;padding:0 32px}
+
+/* ---- masthead ---- */
+.top{padding:74px 0 40px;border-bottom:1px solid var(--g-line)}
+.eyebrow{
+  font-family:var(--g-mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--g-t3);margin-bottom:22px;
+}
+.top h1{
+  font-family:var(--g-disp);font-weight:800;font-size:clamp(2.6rem,6vw,4.4rem);
+  line-height:.98;letter-spacing:-.03em;margin:0 0 20px;text-wrap:balance;max-width:16ch;
+}
+.top h1 em{font-style:normal;color:var(--g-accent)}
+.lede{font-size:1.16rem;color:var(--g-t2);max-width:64ch;margin:0 0 30px}
+.lede strong{color:var(--g-t1);font-weight:600}
+
+.keys{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center;font-size:.9rem;color:var(--g-t2)}
+.keys b{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--g-t1)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot.b{background:var(--g-built)}
+.dot.p{background:var(--g-plan)}
+
+/* ---- section ---- */
+.sec{padding:64px 0 8px;scroll-margin-top:20px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px;margin-bottom:8px}
+.sec-head h2{
+  font-family:var(--g-disp);font-weight:600;font-size:2rem;letter-spacing:-.02em;margin:0;
+}
+.sec-head .count{font-family:var(--g-mono);font-size:.8rem;color:var(--g-t3)}
+.sec-note{color:var(--g-t2);max-width:70ch;margin:0 0 34px;font-size:1.02rem}
+.sec-note code,.inline-code{
+  font-family:var(--g-mono);font-size:.86em;background:var(--g-surface-2);
+  padding:2px 6px;border-radius:5px;color:var(--g-t1);border:1px solid var(--g-line-2);
+}
+
+/* ---- grid of frames ---- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(361px,1fr));gap:46px 30px;align-items:start;justify-items:start}
+
+.shot{display:flex;flex-direction:column;gap:12px}
+.cap{display:flex;align-items:flex-start;gap:10px}
+.cap .idx{
+  font-family:var(--g-mono);font-size:.78rem;color:var(--g-t3);
+  padding-top:3px;flex:0 0 auto;font-variant-numeric:tabular-nums;
+}
+.cap .txt{flex:1;min-width:0}
+.cap .nm{font-weight:600;font-size:1.02rem;line-height:1.3}
+.cap .sub{font-size:.85rem;color:var(--g-t2);margin-top:3px;line-height:1.45}
+.cap .sub code{font-family:var(--g-mono);font-size:.9em;color:var(--g-t3)}
+.pill{
+  flex:0 0 auto;font-family:var(--g-mono);font-size:.66rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:4px 9px;border-radius:99px;margin-top:2px;
+}
+.pill.b{background:rgba(52,211,153,.13);color:#6EE7B7;border:1px solid rgba(52,211,153,.3)}
+.pill.p{background:rgba(251,191,36,.12);color:#FCD34D;border:1px solid rgba(251,191,36,.32)}
+
+.frame{
+  width:calc(440px * var(--scale));height:calc(var(--h,905px) * var(--scale));
+  overflow:hidden;position:relative;
+  border-radius:26px;border:1px solid var(--g-line);background:#0B0C10;
+  box-shadow:0 18px 44px rgba(0,0,0,.55);
+}
+.screen{
+  width:440px;transform:scale(var(--scale));transform-origin:top left;
+  font-family:'Outfit',system-ui,sans-serif;font-size:18px;line-height:1.5;color:#fff;
+  background:#0B0C10;min-height:var(--h,905px);position:relative;padding-bottom:120px;
+}
+
+/* ---- callout ---- */
+.callout{
+  border:1px solid var(--g-line);border-left:3px solid var(--g-accent);
+  background:var(--g-surface);border-radius:0 14px 14px 0;padding:20px 24px;margin:0 0 34px;
+  max-width:78ch;
+}
+.callout.warn{border-left-color:var(--g-plan)}
+.callout h3{font-family:var(--g-disp);font-size:1.02rem;font-weight:600;margin:0 0 8px}
+.callout p{margin:0;color:var(--g-t2);font-size:.98rem}
+.callout p + p{margin-top:10px}
+
+/* ---- tokens ---- */
+.tokens{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:44px}
+.tok{border:1px solid var(--g-line);border-radius:14px;overflow:hidden;background:var(--g-surface)}
+.tok .sw{height:64px}
+.tok .meta{padding:12px 14px}
+.tok .n{font-family:var(--g-mono);font-size:.82rem;color:var(--g-t1)}
+.tok .v{font-family:var(--g-mono);font-size:.74rem;color:var(--g-t3);margin-top:3px}
+.tok .u{font-size:.82rem;color:var(--g-t2);margin-top:6px;line-height:1.45}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-bottom:20px}
+.rule{border-top:1px solid var(--g-line);padding-top:16px}
+.rule h4{font-family:var(--g-disp);font-size:1rem;font-weight:600;margin:0 0 7px}
+.rule p{margin:0;color:var(--g-t2);font-size:.94rem}
+
+.foot{border-top:1px solid var(--g-line);margin-top:80px;padding:38px 0 70px;color:var(--g-t3);font-size:.92rem}
+.foot p{max-width:72ch;margin:0 0 10px}
+
+@media(max-width:640px){
+  .wrap{padding:0 18px}
+  .grid{grid-template-columns:1fr}
+  :root{--scale:.72}
+  .top{padding:48px 0 32px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============================================================
+   APP STYLES — scoped copy of frontend/src/styles/*.css
+   Kept faithful so this gallery is a true spec. If the app's
+   CSS changes, change it here too.
+   ============================================================ */
+.screen{
+  --bg:#0B0C10;--card:#191C24;--card2:#232732;--line:rgba(255,255,255,.14);
+  --accent:#A78BFA;--accent-soft:rgba(167,139,250,.18);
+  --cal:#22D3EE;--pro:#34D399;--carb:#FBBF24;--fat:#F87171;
+  --t1:#FFF;--t2:#D5DAE3;
+}
+.screen *{box-sizing:border-box;margin:0;padding:0}
+.screen .pad{padding:26px 20px 10px}
+.screen .stack{display:flex;flex-direction:column;gap:16px;padding:0 20px 24px}
+.screen h1{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.screen h2{font-size:1.25rem;font-weight:700;margin-bottom:16px}
+.screen .day{font-size:1.05rem;color:var(--t2);font-weight:600;margin-top:6px}
+.screen .lab{font-size:1.02rem;color:var(--t2);font-weight:700;margin-bottom:9px;display:block}
+.screen .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.screen .note{font-size:1rem;color:var(--t2);line-height:1.6;font-weight:500}
+.screen button{font-family:inherit;border:none;cursor:default}
+.screen .big{width:100%;min-height:70px;border-radius:16px;background:var(--accent);color:#12101A;
+  font-size:1.25rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px}
+.screen .big.alt{background:var(--card2);color:var(--t1);border:2px solid var(--line)}
+.screen .big.plain{background:none;border:none;color:var(--t2);font-size:1.1rem;font-weight:700;min-height:56px}
+.screen .big.danger{background:rgba(248,113,113,.15);color:#FCA5A5;border:2px solid rgba(248,113,113,.4)}
+.screen .small{width:auto;min-height:52px;padding:0 20px;font-size:1.02rem;margin-bottom:18px}
+.screen .inp{width:100%;min-height:66px;padding:18px;background:#0E1014;border:2px solid var(--line);
+  border-radius:14px;color:var(--t1);font-size:1.25rem;font-weight:600;display:flex;align-items:center}
+.screen .inp.ph{color:#7A8290;font-weight:500}
+.screen .inp.focus{border-color:var(--accent)}
+.screen .ta{min-height:130px;align-items:flex-start;font-size:1.12rem;line-height:1.5}
+.screen .field + .field{margin-top:20px}
+.screen .pwwrap{position:relative}
+.screen .pwwrap .show{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:52px;
+  padding:0 16px;border-radius:11px;background:var(--card2);color:var(--t2);font-size:.98rem;
+  font-weight:700;border:1px solid var(--line);display:flex;align-items:center}
+.screen .num{display:flex;align-items:center;gap:12px}
+.screen .num button{width:66px;min-height:66px;flex:0 0 66px;border-radius:14px;background:var(--card2);
+  border:2px solid var(--line);color:var(--t1);font-size:1.9rem;font-weight:700}
+.screen .num .inp{text-align:center;justify-content:center}
+.screen .segtoggle{display:flex;gap:4px;background:var(--card2);border:1px solid var(--line);
+  border-radius:11px;padding:3px}
+.screen .segtoggle button{padding:7px 14px;border-radius:8px;font-size:.92rem;font-weight:700;
+  color:var(--t2);background:none}
+.screen .segtoggle button.on{background:var(--accent);color:#12101A}
+.screen .choice{width:100%;min-height:90px;border-radius:16px;background:var(--card2);
+  border:2px solid var(--line);color:var(--t1);font-size:1.2rem;font-weight:700;text-align:left;
+  padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.screen .choice span{font-size:.98rem;color:var(--t2);font-weight:600}
+.screen .choice.on{background:var(--accent-soft);border-color:var(--accent)}
+.screen .err{background:rgba(248,113,113,.14);border:2px solid rgba(248,113,113,.4);border-radius:14px;
+  padding:16px 18px;font-size:1.02rem;font-weight:600;color:#FCA5A5}
+.screen .warn-box{background:rgba(251,191,36,.12);border:2px solid rgba(251,191,36,.4);border-radius:14px;
+  padding:16px 18px;font-size:1.02rem;font-weight:600;color:#FCD34D}
+.screen .bigbar{height:22px;background:rgba(255,255,255,.1);border-radius:11px;overflow:hidden}
+.screen .bigbar > div{height:100%;border-radius:11px}
+.screen .mbar{height:14px;background:rgba(255,255,255,.1);border-radius:7px;overflow:hidden;margin-top:8px}
+.screen .mbar > div{height:100%;border-radius:7px}
+.screen .mrow + .mrow{margin-top:18px}
+.screen .item{padding:16px 0;display:flex;align-items:center;gap:12px}
+.screen .item + .item{border-top:1px solid var(--line)}
+.screen .name{font-size:1.12rem;font-weight:700}
+.screen .meta{font-size:.98rem;color:var(--t2);margin-top:4px;font-weight:600}
+.screen .del{width:52px;height:52px;flex:0 0 52px;border-radius:12px;background:var(--card2);
+  border:1px solid var(--line);color:var(--t2);display:flex;align-items:center;justify-content:center}
+.screen .person{display:flex;align-items:center;gap:14px}
+.screen .av{width:52px;height:52px;border-radius:50%;background:var(--card2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;flex-shrink:0}
+.screen .av.acc{background:var(--accent-soft);border-color:rgba(167,139,250,.4)}
+.screen .nav{position:absolute;bottom:0;left:0;width:100%;height:100px;background:#12141B;
+  border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around}
+.screen .nav button{background:none;color:var(--t2);font-size:.92rem;font-weight:700;display:flex;
+  flex-direction:column;align-items:center;gap:6px;flex:1;height:100%;justify-content:center}
+.screen .nav button.on{color:var(--accent)}
+.screen .nav .addbtn{flex:0 0 90px;background:var(--accent);color:#12101A;height:74px;border-radius:20px;
+  font-size:.92rem;gap:2px}
+.screen .step{display:flex;gap:8px;margin-bottom:18px}
+.screen .step div{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.13)}
+.screen .step div.on{background:var(--accent)}
+.screen .logo{width:84px;height:84px;border-radius:24px;background:var(--accent-soft);
+  border:2px solid rgba(167,139,250,.4);display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;margin-bottom:24px}
+.screen .logo.ok{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4);font-size:2rem}
+.screen .toast{position:absolute;bottom:118px;left:50%;transform:translateX(-50%);background:var(--card2);
+  border:2px solid rgba(52,211,153,.5);color:#fff;font-size:1.05rem;font-weight:700;padding:16px 24px;
+  border-radius:16px;max-width:88%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.screen .codebox{background:#0E1014;border:2px dashed rgba(167,139,250,.5);border-radius:14px;padding:18px;
+  text-align:center;font-size:1.7rem;font-weight:800;letter-spacing:.08em;color:var(--accent)}
+.screen .privacy{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.35)}
+.screen .spinner{width:74px;height:74px;margin:0 auto 24px;border-radius:50%;
+  border:5px solid rgba(167,139,250,.25);border-top-color:var(--accent)}
+.screen .camwrap{aspect-ratio:1;background:#0E1014;border-radius:18px;overflow:hidden;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--t2);
+  border:1px solid var(--line);position:relative}
+.screen .camwrap.short{aspect-ratio:auto;height:220px}
+.screen .ico{display:inline-flex;align-items:center;justify-content:center}
+.screen .ico svg{display:block}
+.screen .plate{width:100%;height:100%;background:
+  radial-gradient(circle at 34% 44%,#8B5E3C 0 18%,transparent 18.5%),
+  radial-gradient(circle at 62% 38%,#D9A441 0 14%,transparent 14.5%),
+  radial-gradient(circle at 50% 70%,#4E7A4A 0 16%,transparent 16.5%),
+  linear-gradient(150deg,#2A2E38,#1A1D25);}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Nutrient Tracking · design reference · commit 5be38e2</div>
+    <h1>Every screen, <em>built and unbuilt</em></h1>
+    <p class="lede">
+      The complete surface of the app, rendered with its real stylesheet rather than redrawn.
+      Twenty-seven screens exist in <code class="inline-code">frontend/src/screens/</code> today.
+      Eight more are designed here and waiting for someone to build them — each one links to its issue.
+      <strong>If you are picking up a UI task, start here.</strong>
+    </p>
+    <div class="keys">
+      <b><span class="dot b"></span>Built</b> <span>shipped and in the repo</span>
+      <b><span class="dot p"></span>Designed</b> <span>specified here, not yet code</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===================== FOUNDATIONS ===================== -->
+  <section class="sec" id="foundations">
+    <div class="sec-head"><h2>Foundations</h2><span class="count">the constraints every screen obeys</span></div>
+    <p class="sec-note">
+      This app is built for someone's parent, not for the person who wrote it. That single decision explains
+      the 18px base font, the 66px input heights, the 70px buttons, and copy that says
+      "They see every meal you eat" instead of "Sharing level: detailed". Match it.
+    </p>
+
+    <div class="tokens">
+      <div class="tok"><div class="sw" style="background:#A78BFA"></div><div class="meta">
+        <div class="n">--accent</div><div class="v">#A78BFA</div>
+        <div class="u">Primary actions, active tab, focus ring</div></div></div>
+      <div class="tok"><div class="sw" style="background:#22D3EE"></div><div class="meta">
+        <div class="n">--cal</div><div class="v">#22D3EE</div>
+        <div class="u">Calories, everywhere without exception</div></div></div>
+      <div class="tok"><div class="sw" style="background:#34D399"></div><div class="meta">
+        <div class="n">--pro</div><div class="v">#34D399</div>
+        <div class="u">Protein. Also the toast border</div></div></div>
+      <div class="tok"><div class="sw" style="background:#FBBF24"></div><div class="meta">
+        <div class="n">--carb</div><div class="v">#FBBF24</div>
+        <div class="u">Carbs. Also low-confidence warnings</div></div></div>
+      <div class="tok"><div class="sw" style="background:#F87171"></div><div class="meta">
+        <div class="n">--fat</div><div class="v">#F87171</div>
+        <div class="u">Fat. Also destructive actions</div></div></div>
+      <div class="tok"><div class="sw" style="background:#191C24;border-bottom:1px solid rgba(255,255,255,.14)"></div><div class="meta">
+        <div class="n">--card</div><div class="v">#191C24</div>
+        <div class="u">Every card surface, on --bg #0B0C10</div></div></div>
+    </div>
+
+    <div class="rules">
+      <div class="rule"><h4>Nothing is smaller than 44px</h4>
+        <p>Most touch targets are 52–70px. Steppers are 66px squares because a thumb has to hit them reliably.</p></div>
+      <div class="rule"><h4>Two text tiers, both AA</h4>
+        <p><code class="inline-code">--t1</code> white and <code class="inline-code">--t2</code> #D5DAE3. There is no third, dimmer tier — it wouldn't pass on <code class="inline-code">--card</code>.</p></div>
+      <div class="rule"><h4>Colour never carries meaning alone</h4>
+        <p>Macro bars are labelled. "Not sharing" gets a padlock as well as reduced opacity.</p></div>
+      <div class="rule"><h4>Say what happens, in plain words</h4>
+        <p>"Is this right?" · "They see only your daily total" · "We could not analyze that — please fill the numbers in".</p></div>
+      <div class="rule"><h4>Errors are inline, never alerts</h4>
+        <p>Red <code class="inline-code">.err</code> box above the form, or a toast above the nav. No <code class="inline-code">alert()</code>.</p></div>
+      <div class="rule"><h4>Four tabs, and that's final</h4>
+        <p>Today · Groups · Add · Me. New surfaces go inside an existing tab, not beside it.</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== ONBOARDING ===================== -->
+  <section class="sec" id="onboarding">
+    <div class="sec-head"><h2>Getting in</h2><span class="count">9 screens · screens/Onboarding.jsx</span></div>
+    <p class="sec-note">
+      One file holds all eight, switched by a <code class="inline-code">screen</code> state. Signup is three steps with
+      a visible progress bar, and step three can be skipped entirely — solo tracking has to work before anyone
+      has a group.
+    </p>
+    <div class="grid">
+
+      <!-- 01 welcome -->
+      <div class="shot">
+        <div class="cap"><span class="idx">01</span><span class="txt"><span class="nm">Welcome</span>
+          <span class="sub">First run. Two doors, no marketing.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad" style="padding-top:64px">
+            <div class="logo">🥗</div>
+            <h1>Track what you eat</h1>
+            <div class="day">Take a photo of your meal.<br>We work out the rest.</div>
+          </div>
+          <div class="stack" style="margin-top:22px">
+            <button class="big">Create an account</button>
+            <button class="big alt">I already have an account</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 02 sign in -->
+      <div class="shot">
+        <div class="cap"><span class="idx">02</span><span class="txt"><span class="nm">Sign in</span>
+          <span class="sub">Show/Hide on the password — typing a password blind on a phone is the#1 support call.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Sign in</h1>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="field"><span class="lab">Your email</span><div class="inp">sunita@email.com</div></div>
+              <div class="field"><span class="lab">Password</span>
+                <div class="pwwrap"><div class="inp">••••••••••</div><div class="show">Show</div></div></div>
+            </div>
+            <button class="big">Sign in</button>
+            <button class="big plain">I forgot my password</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 03 wrong password -->
+      <div class="shot">
+        <div class="cap"><span class="idx">03</span><span class="txt"><span class="nm">Sign in — wrong details</span>
+          <span class="sub">Inline <code>.err</code> box. Deliberately doesn't say which field was wrong.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Sign in</h1>
+          </div>
+          <div class="stack">
+            <div class="err">That email and password don't match. Please try again.</div>
+            <div class="card">
+              <div class="field"><span class="lab">Your email</span><div class="inp">sunita@email.com</div></div>
+              <div class="field"><span class="lab">Password</span>
+                <div class="pwwrap"><div class="inp focus">Summer2026</div><div class="show">Hide</div></div></div>
+            </div>
+            <button class="big">Sign in</button>
+            <button class="big plain">I forgot my password</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 04 forgot -->
+      <div class="shot">
+        <div class="cap"><span class="idx">04</span><span class="txt"><span class="nm">Forgot password</span>
+          <span class="sub">Hands off to Supabase's reset email.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Forgot password</h1>
+            <div class="day">We will email you a link to make a new one.</div>
+          </div>
+          <div class="stack">
+            <div class="card"><span class="lab">Your email</span><div class="inp ph">name@email.com</div></div>
+            <button class="big">Send me the link</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 05 sent -->
+      <div class="shot">
+        <div class="cap"><span class="idx">05</span><span class="txt"><span class="nm">Link sent</span>
+          <span class="sub">Green <code>.logo.ok</code> — the only confirmation screen in the app.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad" style="padding-top:70px;text-align:center">
+            <div class="logo ok" style="margin:0 auto 24px"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></div>
+            <h1>Check your email</h1>
+            <div class="day">Open the link we sent to make a new password.</div>
+          </div>
+          <div class="stack" style="margin-top:22px"><button class="big alt">Back to sign in</button></div>
+        </div></div>
+      </div>
+
+      <!-- 06 signup -->
+      <div class="shot">
+        <div class="cap"><span class="idx">06</span><span class="txt"><span class="nm">Create account · step 1</span>
+          <span class="sub">Validation fires on Next, never per keystroke.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <div class="step"><div class="on"></div><div></div><div></div></div>
+            <h1>Create account</h1><div class="day">Step 1 of 3</div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="field"><span class="lab">Your name</span><div class="inp">Sunita</div></div>
+              <div class="field"><span class="lab">Your email</span><div class="inp">sunita@email.com</div></div>
+              <div class="field"><span class="lab">Make a password</span>
+                <div class="pwwrap"><div class="inp ph">At least 8 letters</div><div class="show">Show</div></div>
+                <div class="note" style="margin-top:12px">Tap <b>Show</b> to see what you typed.</div></div>
+            </div>
+            <button class="big">Next</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 07 about you -->
+      <div class="shot">
+        <div class="cap"><span class="idx">07</span><span class="txt"><span class="nm">About you · step 2</span>
+          <span class="sub">Feeds Mifflin-St Jeor. Height has a cm / ft&amp;in toggle. Skippable.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1020px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <div class="step"><div class="on"></div><div class="on"></div><div></div></div>
+            <h1>About you</h1><div class="day">Step 2 of 3 — sets your daily goals</div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="field"><span class="lab">Your age</span><div class="inp">42</div>
+                <div class="note" style="margin-top:8px">1–110 years</div></div>
+              <div class="field"><span class="lab">Your weight</span><div class="inp">68</div>
+                <div class="note" style="margin-top:8px">1–500 kg</div></div>
+              <div class="field">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+                  <span class="lab" style="margin-bottom:0">Your height</span>
+                  <div class="segtoggle"><button class="on">cm</button><button>ft &amp; in</button></div>
+                </div>
+                <div class="inp">165</div>
+                <div class="note" style="margin-top:8px">30–250 cm</div></div>
+            </div>
+            <button class="big">Next</button>
+            <button class="big plain">Skip for now</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 08 group setup -->
+      <div class="shot">
+        <div class="cap"><span class="idx">08</span><span class="txt"><span class="nm">Share with people · step 3</span>
+          <span class="sub">"Just me for now" is a first-class option, not a skip link.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <div class="step"><div class="on"></div><div class="on"></div><div class="on"></div></div>
+            <h1>Share with people</h1><div class="day">Step 3 of 3 — you can change this any time</div>
+          </div>
+          <div class="stack">
+            <button class="choice">Join a group<span>Someone gave you a code</span></button>
+            <button class="choice">Start a new group<span>Invite your family or friends</span></button>
+            <button class="choice">Just me for now<span>Track on your own — nobody sees anything</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 09 sharing picker -->
+      <div class="shot">
+        <div class="cap"><span class="idx">09</span><span class="txt"><span class="nm">Choose a sharing level</span>
+          <span class="sub">Three levels, described by consequence. The privacy card is not optional copy.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <h1>What can Family see?</h1>
+            <div class="day">You choose. You can change it later.</div>
+          </div>
+          <div class="stack">
+            <button class="choice" style="min-height:100px">Every meal I eat<span>They see each meal and its numbers</span></button>
+            <button class="choice" style="min-height:100px">Only my daily total<span>One total per day, not each meal</span></button>
+            <button class="choice" style="min-height:100px">Nothing at all<span>They see my name only</span></button>
+            <div class="card privacy">
+              <div style="font-size:1.08rem;font-weight:700;margin-bottom:6px">Your photos are never shared</div>
+              <div class="note">Whichever you pick, nobody can see your meal photos.</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== TODAY ===================== -->
+  <section class="sec" id="today">
+    <div class="sec-head"><h2>Today</h2><span class="count">3 states · screens/Today.jsx</span></div>
+    <p class="sec-note">
+      The home tab. Calories get the biggest number on the screen; the three macros are equal-weight bars
+      below it. Group cards appear underneath only for members who share something — a group where everyone
+      is set to <code class="inline-code">none</code> renders nothing rather than an empty shell.
+    </p>
+    <div class="grid">
+
+      <!-- 10 empty -->
+      <div class="shot">
+        <div class="cap"><span class="idx">10</span><span class="txt"><span class="nm">Empty — first day</span>
+          <span class="sub">Points at the + button by name. No illustration, no empty-state art.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:1024px"><div class="screen">
+          <div class="pad"><h1>Hello, Sunita</h1><div class="day">Sunday, August 23</div></div>
+          <div class="stack">
+            <div class="card" style="text-align:center;padding:26px 22px">
+              <div class="lab" style="margin:0">You have eaten</div>
+              <div style="font-size:3.7rem;font-weight:800;color:var(--cal);line-height:1.15;margin:4px 0">0</div>
+              <div class="lab" style="margin-bottom:18px">of 2000 calories</div>
+              <div class="bigbar"><div style="width:0%;background:var(--cal)"></div></div>
+              <div style="font-size:1.25rem;font-weight:800;margin-top:16px;color:var(--pro)">2000 calories left today</div>
+            </div>
+            <div class="card">
+              <h2>Protein, carbs and fat</h2>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--pro)">Protein</span>
+                <span class="lab" style="margin:0">0 of 150g</span></div>
+                <div class="mbar"><div style="width:0%;background:var(--pro)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--carb)">Carbs</span>
+                <span class="lab" style="margin:0">0 of 200g</span></div>
+                <div class="mbar"><div style="width:0%;background:var(--carb)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--fat)">Fat</span>
+                <span class="lab" style="margin:0">0 of 70g</span></div>
+                <div class="mbar"><div style="width:0%;background:var(--fat)"></div></div></div>
+            </div>
+            <div class="card">
+              <h2>What you ate today</h2>
+              <div class="note" style="text-align:center;padding:14px 0">Nothing yet today.<br><b>Tap the big + below to add your first meal.</b></div>
+            </div>
+          </div>
+          <div class="nav">
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 11 with meals -->
+      <div class="shot">
+        <div class="cap"><span class="idx">11</span><span class="txt"><span class="nm">A normal day</span>
+          <span class="sub">Group cards are tappable and jump straight into that group.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1374px"><div class="screen">
+          <div class="pad"><h1>Hello, Sunita</h1><div class="day">Sunday, August 23</div></div>
+          <div class="stack">
+            <div class="card" style="text-align:center;padding:26px 22px">
+              <div class="lab" style="margin:0">You have eaten</div>
+              <div style="font-size:3.7rem;font-weight:800;color:var(--cal);line-height:1.15;margin:4px 0">1310</div>
+              <div class="lab" style="margin-bottom:18px">of 2000 calories</div>
+              <div class="bigbar"><div style="width:65%;background:var(--cal)"></div></div>
+              <div style="font-size:1.25rem;font-weight:800;margin-top:16px;color:var(--pro)">690 calories left today</div>
+            </div>
+            <div class="card">
+              <h2>Protein, carbs and fat</h2>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--pro)">Protein</span>
+                <span class="lab" style="margin:0">78 of 150g</span></div>
+                <div class="mbar"><div style="width:52%;background:var(--pro)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--carb)">Carbs</span>
+                <span class="lab" style="margin:0">148 of 200g</span></div>
+                <div class="mbar"><div style="width:74%;background:var(--carb)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--fat)">Fat</span>
+                <span class="lab" style="margin:0">39 of 70g</span></div>
+                <div class="mbar"><div style="width:56%;background:var(--fat)"></div></div></div>
+            </div>
+            <div class="card">
+              <h2>What you ate today</h2>
+              <div class="item"><div style="flex:1"><div class="name">Chicken &amp; Vegetables</div>
+                <div class="meta">1:40 PM · 480 calories</div></div>
+                <div class="del"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></div></div>
+              <div class="item"><div style="flex:1"><div class="name">Protein Shake</div>
+                <div class="meta">11:05 AM · 220 calories</div></div>
+                <div class="del"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></div></div>
+              <div class="item"><div style="flex:1"><div class="name">Roti, Dal &amp; Curd</div>
+                <div class="meta">8:30 AM · 610 calories</div></div>
+                <div class="del"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></div></div>
+            </div>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                <h2 style="margin:0">Family</h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D5DAE3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:9px 0">
+                <span style="font-size:1.08rem;font-weight:600">Priya</span>
+                <span style="font-size:1.08rem;font-weight:800;color:var(--cal)">1180 kcal</span></div>
+              <div style="display:flex;justify-content:space-between;padding:9px 0">
+                <span style="font-size:1.08rem;font-weight:600">Dad</span>
+                <span style="font-size:1.08rem;font-weight:800;color:var(--cal)">1890 kcal</span></div>
+            </div>
+          </div>
+          <div class="nav">
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 12 over goal -->
+      <div class="shot">
+        <div class="cap"><span class="idx">12</span><span class="txt"><span class="nm">Over the goal</span>
+          <span class="sub">Bar caps at 100%, the line turns amber and counts up. Never red, never scolding.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:1006px"><div class="screen">
+          <div class="pad"><h1>Hello, Sunita</h1><div class="day">Sunday, August 23</div></div>
+          <div class="stack">
+            <div class="card" style="text-align:center;padding:26px 22px">
+              <div class="lab" style="margin:0">You have eaten</div>
+              <div style="font-size:3.7rem;font-weight:800;color:var(--cal);line-height:1.15;margin:4px 0">2340</div>
+              <div class="lab" style="margin-bottom:18px">of 2000 calories</div>
+              <div class="bigbar"><div style="width:100%;background:var(--cal)"></div></div>
+              <div style="font-size:1.25rem;font-weight:800;margin-top:16px;color:var(--carb)">340 over your goal</div>
+            </div>
+            <div class="card">
+              <h2>Protein, carbs and fat</h2>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--pro)">Protein</span>
+                <span class="lab" style="margin:0">162 of 150g</span></div>
+                <div class="mbar"><div style="width:100%;background:var(--pro)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--carb)">Carbs</span>
+                <span class="lab" style="margin:0">241 of 200g</span></div>
+                <div class="mbar"><div style="width:100%;background:var(--carb)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--fat)">Fat</span>
+                <span class="lab" style="margin:0">71 of 70g</span></div>
+                <div class="mbar"><div style="width:100%;background:var(--fat)"></div></div></div>
+            </div>
+            <div class="card"><h2>What you ate today</h2>
+              <div class="item"><div style="flex:1"><div class="name">Masala Dosa</div>
+                <div class="meta">7:20 PM · 450 calories</div></div>
+                <div class="del"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></div></div>
+            </div>
+          </div>
+          <div class="toast">Meal removed</div>
+          <div class="nav">
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== ADD MEAL ===================== -->
+  <section class="sec" id="add">
+    <div class="sec-head"><h2>Adding a meal</h2><span class="count">7 states · screens/AddMeal.jsx</span></div>
+    <p class="sec-note">
+      The whole product thesis lives in this flow, and it has one non-negotiable property:
+      <strong>it never dead-ends.</strong> Camera denied → file picker. AI down → the same review form,
+      zeroed, with an honest message. There is no state where a user has eaten something and cannot record it.
+    </p>
+    <div class="callout">
+      <h3>Every correction is data</h3>
+      <p>On save the client diffs each field against what the model returned. Any difference sets
+      <code class="inline-code">is_edited</code> and writes the model's numbers to <code class="inline-code">original_*</code>.
+      That's what makes AI accuracy a query instead of an opinion — and it's why the review screen must never
+      be skipped, even when confidence is high.</p>
+    </div>
+    <div class="grid">
+
+      <!-- 13 pick -->
+      <div class="shot">
+        <div class="cap"><span class="idx">13</span><span class="txt"><span class="nm">Choose how</span>
+          <span class="sub">Two 145px targets. Typing is equal to photographing, not a fallback.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad"><h1>Add a meal</h1><div class="day">Choose one</div></div>
+          <div class="stack">
+            <button class="big" style="min-height:145px;flex-direction:column;gap:13px;font-size:1.45rem">
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              Take a photo</button>
+            <button class="big alt" style="min-height:145px;flex-direction:column;gap:13px;font-size:1.45rem">
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+              Type what you ate</button>
+          </div>
+          <div class="nav">
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 14 camera -->
+      <div class="shot">
+        <div class="cap"><span class="idx">14</span><span class="txt"><span class="nm">Camera</span>
+          <span class="sub">Rear-facing <code>getUserMedia</code>. If it's blocked, the file picker opens by itself.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Take a photo</h1>
+          </div>
+          <div class="stack">
+            <div class="camwrap"><div class="plate"></div></div>
+            <button class="big" style="min-height:76px">Take photo</button>
+            <button class="big plain">Choose a photo instead</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 15 text -->
+      <div class="shot">
+        <div class="cap"><span class="idx">15</span><span class="txt"><span class="nm">Type what you ate</span>
+          <span class="sub">"Write it the way you would say it." The model handles vernacular fine.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Type what you ate</h1>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="inp ta">Two rotis, dal and a bowl of curd</div>
+              <div class="note" style="margin-top:14px">Write it the way you would say it.</div>
+            </div>
+            <button class="big" style="min-height:76px">Done</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 16 waiting -->
+      <div class="shot">
+        <div class="cap"><span class="idx">16</span><span class="txt"><span class="nm">Analyzing</span>
+          <span class="sub">Says what's happening in human words, and how long to expect.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div style="padding:110px 30px;text-align:center">
+            <div class="spinner"></div>
+            <div style="font-size:1.45rem;font-weight:800">Looking at your food…</div>
+            <div class="note" style="margin-top:10px;font-size:1.08rem">This takes a few seconds</div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 17 review -->
+      <div class="shot">
+        <div class="cap"><span class="idx">17</span><span class="txt"><span class="nm">Review &amp; correct</span>
+          <span class="sub">Every value is a 66px stepper. Typing works too, clamped on blur.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1311px"><div class="screen">
+          <div class="pad"><h1>Is this right?</h1><div class="day">Change anything that looks wrong</div></div>
+          <div class="stack">
+            <div class="camwrap short"><div class="plate"></div></div>
+            <div class="card">
+              <span class="lab">We think this is</span>
+              <div class="inp" style="font-size:1.15rem">Roti, Dal &amp; Curd</div>
+              <div class="field" style="margin-top:20px"><span class="lab">Calories</span>
+                <div class="num"><button>−</button><div class="inp">430</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Protein (g)</span>
+                <div class="num"><button>−</button><div class="inp">18</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Carbs (g)</span>
+                <div class="num"><button>−</button><div class="inp">62</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Fat (g)</span>
+                <div class="num"><button>−</button><div class="inp">12</div><button>+</button></div></div>
+            </div>
+            <button class="big" style="min-height:76px">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Save</button>
+            <button class="big alt">Start over</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 18 low confidence -->
+      <div class="shot">
+        <div class="cap"><span class="idx">18</span><span class="txt"><span class="nm">Review — low confidence</span>
+          <span class="sub">Fires under <code>confidence &lt; 0.7</code>. Amber, not red — it's a nudge, not an error.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1202px"><div class="screen">
+          <div class="pad"><h1>Is this right?</h1><div class="day">Change anything that looks wrong</div></div>
+          <div class="stack">
+            <div class="warn-box">We are not very sure about this one — please check the numbers.</div>
+            <div class="camwrap short"><div class="plate"></div></div>
+            <div class="card">
+              <span class="lab">We think this is</span>
+              <div class="inp focus" style="font-size:1.15rem">Mixed vegetable curry</div>
+              <div class="field" style="margin-top:20px"><span class="lab">Calories</span>
+                <div class="num"><button>−</button><div class="inp">380</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Protein (g)</span>
+                <div class="num"><button>−</button><div class="inp">11</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Carbs (g)</span>
+                <div class="num"><button>−</button><div class="inp">44</div><button>+</button></div></div>
+            </div>
+            <button class="big" style="min-height:76px">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Save</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 19 AI failed -->
+      <div class="shot">
+        <div class="cap"><span class="idx">19</span><span class="txt"><span class="nm">AI unavailable</span>
+          <span class="sub">Both providers failed. Same form, zeroed, name blank. Logging still completes.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1008px"><div class="screen">
+          <div class="pad"><h1>Is this right?</h1><div class="day">Change anything that looks wrong</div></div>
+          <div class="stack">
+            <div class="card">
+              <span class="lab">We think this is</span>
+              <div class="inp ph">Type the meal name</div>
+              <div class="field" style="margin-top:20px"><span class="lab">Calories</span>
+                <div class="num"><button>−</button><div class="inp">0</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Protein (g)</span>
+                <div class="num"><button>−</button><div class="inp">0</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Carbs (g)</span>
+                <div class="num"><button>−</button><div class="inp">0</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Fat (g)</span>
+                <div class="num"><button>−</button><div class="inp">0</div><button>+</button></div></div>
+            </div>
+            <button class="big" style="min-height:76px">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Save</button>
+          </div>
+          <div class="toast" style="border-color:rgba(251,191,36,.5)">We could not analyze that — please fill the numbers in</div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== GROUPS ===================== -->
+  <section class="sec" id="groups">
+    <div class="sec-head"><h2>Groups</h2><span class="count">6 screens · screens/Groups.jsx</span></div>
+    <p class="sec-note">
+      The tab routes itself by how many groups you're in: <strong>zero</strong> shows join/create,
+      <strong>one</strong> drops you straight into it, <strong>two or more</strong> shows a picker.
+      Nobody navigates a list of one.
+    </p>
+    <div class="callout">
+      <h3>The detail screen renders three different ways at once</h3>
+      <p>Members at <code class="inline-code">detailed</code> get a meal timeline. Members at
+      <code class="inline-code">totals</code> get one card of daily numbers. Members at
+      <code class="inline-code">none</code> are listed with a padlock and nothing else — visible as
+      participating, which matters, without leaking anything.</p>
+      <p>No branch, at any level, has access to a photo. The shared views don't project the column.</p>
+    </div>
+    <div class="grid">
+
+      <!-- 20 empty -->
+      <div class="shot">
+        <div class="cap"><span class="idx">20</span><span class="txt"><span class="nm">No groups yet</span>
+          <span class="sub">Solo tracking is complete and valid. This screen doesn't push.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad"><h1>Groups</h1><div class="day">Share your progress with family or friends</div></div>
+          <div class="stack">
+            <button class="choice" style="min-height:100px">Join a group<span>Someone gave you a code</span></button>
+            <button class="choice" style="min-height:100px">Start a new group<span>Invite your family or friends</span></button>
+          </div>
+          <div class="nav">
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 21 join -->
+      <div class="shot">
+        <div class="cap"><span class="idx">21</span><span class="txt"><span class="nm">Join by code</span>
+          <span class="sub">Centred, letter-spaced, auto-uppercased. Resolves through an RPC, not a table read.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Join a group</h1><div class="day">Type the code you were given</div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <span class="lab">Group code</span>
+              <div class="inp focus" style="justify-content:center;font-size:1.5rem;letter-spacing:.06em">FAM-7K2X9M</div>
+              <div class="note" style="margin-top:14px">Ask whoever set up the group to send you the code.</div>
+            </div>
+            <button class="big">Join</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 22 create -->
+      <div class="shot">
+        <div class="cap"><span class="idx">22</span><span class="txt"><span class="nm">New group</span>
+          <span class="sub">A type picker belongs here and doesn't exist yet — <a href="BACKLOG.md">issue #10</a>.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>New group</h1><div class="day">Give it a name your people will recognise</div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <span class="lab">Group name</span>
+              <div class="inp">Family</div>
+              <div class="note" style="margin-top:14px">You will get a code to share with them.</div>
+            </div>
+            <button class="big">Create group</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 23 picker -->
+      <div class="shot">
+        <div class="cap"><span class="idx">23</span><span class="txt"><span class="nm">Group picker</span>
+          <span class="sub">Only appears at two or more. The point of the whole product, in one list.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad"><h1>Groups</h1><div class="day">Tap a group to see it</div></div>
+          <div class="stack">
+            <button class="choice" style="min-height:94px">
+              <span style="display:flex;align-items:center;gap:14px;width:100%">
+                <span class="av acc">F</span>
+                <span style="flex:1"><span style="display:block;font-size:1.25rem">Family</span>
+                <span style="font-size:.98rem;color:var(--t2);font-weight:600">4 people</span></span>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D5DAE3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </span></button>
+            <button class="choice" style="min-height:94px">
+              <span style="display:flex;align-items:center;gap:14px;width:100%">
+                <span class="av acc">G</span>
+                <span style="flex:1"><span style="display:block;font-size:1.25rem">Gym Friends</span>
+                <span style="font-size:.98rem;color:var(--t2);font-weight:600">3 people</span></span>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D5DAE3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </span></button>
+            <button class="choice" style="min-height:94px">
+              <span style="display:flex;align-items:center;gap:14px;width:100%">
+                <span class="av acc">O</span>
+                <span style="flex:1"><span style="display:block;font-size:1.25rem">Office</span>
+                <span style="font-size:.98rem;color:var(--t2);font-weight:600">3 people</span></span>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D5DAE3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </span></button>
+            <button class="big alt">Join a group</button>
+            <button class="big alt">Start a new group</button>
+          </div>
+          <div class="nav">
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 24 detail -->
+      <div class="shot">
+        <div class="cap"><span class="idx">24</span><span class="txt"><span class="nm">Group detail — all three levels</span>
+          <span class="sub">Priya shares meals · Dad shares totals · Liam shares nothing. One screen, three renderings.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1395px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> All groups</button>
+            <h1>Family</h1><div class="day">4 people · code FAM-7K2X9M</div>
+          </div>
+          <div class="stack">
+            <div class="card" style="border-color:rgba(167,139,250,.35)">
+              <div class="person">
+                <span class="av acc">S</span>
+                <span style="flex:1"><span style="display:block;font-size:1.2rem;font-weight:700">You</span>
+                <span style="display:block;font-size:.98rem;color:var(--t2);font-weight:600">They see every meal you eat</span></span>
+                <span style="font-size:1.2rem;font-weight:800;color:var(--cal)">1310 kcal</span>
+              </div>
+              <div style="margin-top:14px;color:var(--t2);font-size:1.1rem;font-weight:700">Change what they see →</div>
+            </div>
+
+            <div class="card">
+              <div class="person" style="margin-bottom:16px">
+                <span class="av">P</span>
+                <span><span style="display:block;font-size:1.25rem;font-weight:700">Priya</span>
+                <span style="display:block;font-size:1rem;color:var(--t2);font-weight:600">1180 calories today</span></span>
+              </div>
+              <div class="item"><div style="flex:1"><div class="name">Paneer Salad</div><div class="meta">1:40 PM · 410 calories</div></div></div>
+              <div class="item"><div style="flex:1"><div class="name">Poha &amp; Chai</div><div class="meta">8:30 AM · 340 calories</div></div></div>
+            </div>
+
+            <div class="card">
+              <div class="person" style="margin-bottom:16px">
+                <span class="av">D</span>
+                <span><span style="display:block;font-size:1.25rem;font-weight:700">Dad</span>
+                <span style="display:block;font-size:1rem;color:var(--t2);font-weight:600">Shares totals only</span></span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+                <span class="lab" style="margin:0">Calories</span>
+                <span style="font-size:1.8rem;font-weight:800;color:var(--cal)">1890</span></div>
+              <div style="display:flex;gap:18px">
+                <div style="flex:1"><div style="font-size:.98rem;color:var(--t2);font-weight:600">Protein</div>
+                  <div style="font-size:1.25rem;font-weight:800;color:var(--pro)">104g</div></div>
+                <div style="flex:1"><div style="font-size:.98rem;color:var(--t2);font-weight:600">Carbs</div>
+                  <div style="font-size:1.25rem;font-weight:800;color:var(--carb)">210g</div></div>
+                <div style="flex:1"><div style="font-size:.98rem;color:var(--t2);font-weight:600">Fat</div>
+                  <div style="font-size:1.25rem;font-weight:800;color:var(--fat)">62g</div></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="person" style="padding:8px 0">
+                <span style="opacity:.55"><span class="av">L</span></span>
+                <span style="flex:1"><span style="display:block;font-size:1.12rem;font-weight:700">Liam</span>
+                <span style="display:block;font-size:.98rem;color:var(--t2);font-weight:600">Not sharing</span></span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D5DAE3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+            </div>
+
+            <div class="card privacy">
+              <div style="font-size:1.08rem;font-weight:700;margin-bottom:5px">Photos stay private</div>
+              <div class="note">Nobody here can see anyone's meal photos. Only the numbers.</div>
+            </div>
+            <button class="big danger">Leave this group</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 25 join error -->
+      <div class="shot">
+        <div class="cap"><span class="idx">25</span><span class="txt"><span class="nm">Code not found</span>
+          <span class="sub">Same message for "wrong code" and "no such group" — no enumeration oracle.</span></span><span class="pill b">Built</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Join a group</h1><div class="day">Type the code you were given</div>
+          </div>
+          <div class="stack">
+            <div class="err">We could not find that code. Please check and try again.</div>
+            <div class="card">
+              <span class="lab">Group code</span>
+              <div class="inp" style="justify-content:center;font-size:1.5rem;letter-spacing:.06em">FAM-7K2X9N</div>
+              <div class="note" style="margin-top:14px">Ask whoever set up the group to send you the code.</div>
+            </div>
+            <button class="big">Join</button>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== ME ===================== -->
+  <section class="sec" id="me">
+    <div class="sec-head"><h2>Me</h2><span class="count">2 states · screens/Me.jsx</span></div>
+    <p class="sec-note">
+      Settings, and the only place sharing levels can be changed after joining. One card per group,
+      because the whole point is that the answer differs per group.
+    </p>
+    <div class="grid">
+
+      <!-- 26 goals -->
+      <div class="shot">
+        <div class="cap"><span class="idx">26</span><span class="txt"><span class="nm">Goals</span>
+          <span class="sub">"Suggest goals for me" runs Mifflin-St Jeor. There's no way to edit the inputs — <a href="BACKLOG.md">issue #8</a>.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1218px"><div class="screen">
+          <div class="pad"><h1>My settings</h1></div>
+          <div class="stack">
+            <div class="card person">
+              <span class="av acc" style="width:62px;height:62px;font-size:1.6rem">S</span>
+              <span><span style="display:block;font-size:1.3rem;font-weight:800">Sunita</span>
+              <span style="display:block;font-size:.98rem;color:var(--t2);font-weight:600">sunita@email.com</span></span>
+            </div>
+            <div class="card">
+              <h2>My daily goals</h2>
+              <div class="field"><span class="lab">Calories</span>
+                <div class="num"><button>−</button><div class="inp">2000</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Protein (g)</span>
+                <div class="num"><button>−</button><div class="inp">150</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Carbs (g)</span>
+                <div class="num"><button>−</button><div class="inp">200</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Fat (g)</span>
+                <div class="num"><button>−</button><div class="inp">70</div><button>+</button></div></div>
+              <button class="big" style="margin-top:18px">Save goals</button>
+              <button class="big plain">Suggest goals for me</button>
+            </div>
+            <div class="card"><h2>Photos</h2>
+              <div class="note">Meal photos are deleted after 30 days. Your food history is kept.</div></div>
+          </div>
+          <div class="toast">Goals saved</div>
+          <div class="nav">
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 27 sharing -->
+      <div class="shot">
+        <div class="cap"><span class="idx">27</span><span class="txt"><span class="nm">Sharing, per group</span>
+          <span class="sub">Different answer per group — this is the feature. Changes apply instantly.</span></span><span class="pill b">Built</span></div>
+        <div class="frame tall" style="--h:1163px"><div class="screen">
+          <div class="pad"><h1>My settings</h1></div>
+          <div class="stack">
+            <div class="card">
+              <h2>What Family can see</h2>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <button class="choice on" style="min-height:84px">
+                  <span style="display:flex;align-items:center;gap:10px;width:100%">
+                    <span style="flex:1">Every meal I eat</span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                  <span>They see each meal and its numbers</span></button>
+                <button class="choice" style="min-height:84px">Only my daily total<span>One total per day, not each meal</span></button>
+                <button class="choice" style="min-height:84px">Nothing at all<span>They see my name only</span></button>
+              </div>
+              <div class="note" style="margin-top:14px">Photos are never shared, whichever you choose.</div>
+            </div>
+            <div class="card">
+              <h2>What Office can see</h2>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <button class="choice" style="min-height:84px">Every meal I eat<span>They see each meal and its numbers</span></button>
+                <button class="choice" style="min-height:84px">Only my daily total<span>One total per day, not each meal</span></button>
+                <button class="choice on" style="min-height:84px">
+                  <span style="display:flex;align-items:center;gap:10px;width:100%">
+                    <span style="flex:1">Nothing at all</span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                  <span>They see my name only</span></button>
+              </div>
+            </div>
+            <button class="big alt" style="color:var(--fat)">Sign out</button>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== PLANNED ===================== -->
+  <section class="sec" id="planned">
+    <div class="sec-head"><h2>Designed, not built</h2><span class="count">8 screens · all unclaimed</span></div>
+    <p class="sec-note">
+      These eight do not exist in the codebase. They are specified here so that "build the history view" is a
+      contained task with a known answer rather than an open design question. Each links to its issue in
+      <a href="BACKLOG.md">the backlog</a>. Build them in the app's existing classes —
+      <code class="inline-code">.card</code>, <code class="inline-code">.item</code>,
+      <code class="inline-code">.choice</code>, <code class="inline-code">.big</code> — and no new ones
+      unless a pattern genuinely repeats.
+    </p>
+    <div class="callout warn">
+      <h3>One rule for the Trends screen specifically</h3>
+      <p>An earlier version of this app shipped a trends chart filled with <code class="inline-code">Math.random()</code>
+      — in production, rendering as though it were real data. It was deleted rather than fixed.
+      <strong>Show an empty state when there is no data.</strong> Never render a placeholder that a user could
+      mistake for their own numbers.</p>
+    </div>
+    <div class="grid">
+
+      <!-- 28 history -->
+      <div class="shot">
+        <div class="cap"><span class="idx">28</span><span class="txt"><span class="nm">A past day</span>
+          <span class="sub">Issue #7. <code>listMeals</code> already takes a date — only the UI is missing.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1079px"><div class="screen">
+          <div class="pad"><h1>Yesterday</h1><div class="day">Saturday, August 22</div></div>
+          <div class="stack">
+            <div class="card" style="padding:14px 16px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <button class="big alt" style="width:60px;min-height:56px;flex:0 0 60px;font-size:1.5rem">‹</button>
+                <div style="flex:1;text-align:center">
+                  <div style="font-size:1.15rem;font-weight:800">Sat 22 Aug</div>
+                  <div style="font-size:.95rem;color:var(--t2);font-weight:600;margin-top:2px">Tap to pick a date</div>
+                </div>
+                <button class="big alt" style="width:60px;min-height:56px;flex:0 0 60px;font-size:1.5rem">›</button>
+              </div>
+            </div>
+            <div class="card" style="text-align:center;padding:26px 22px">
+              <div class="lab" style="margin:0">You ate</div>
+              <div style="font-size:3.7rem;font-weight:800;color:var(--cal);line-height:1.15;margin:4px 0">1870</div>
+              <div class="lab" style="margin-bottom:18px">of 2000 calories</div>
+              <div class="bigbar"><div style="width:93%;background:var(--cal)"></div></div>
+              <div style="font-size:1.25rem;font-weight:800;margin-top:16px;color:var(--pro)">130 under your goal</div>
+            </div>
+            <div class="card">
+              <h2>What you ate</h2>
+              <div class="item"><div style="flex:1"><div class="name">Grilled Chicken &amp; Quinoa</div>
+                <div class="meta">8:10 PM · 520 calories</div></div></div>
+              <div class="item"><div style="flex:1"><div class="name">Vegetable Thali</div>
+                <div class="meta">1:25 PM · 640 calories</div></div></div>
+              <div class="item"><div style="flex:1"><div class="name">Oats Bowl</div>
+                <div class="meta">7:50 AM · 310 calories</div></div></div>
+              <div class="item"><div style="flex:1"><div class="name">Chai &amp; Biscuits</div>
+                <div class="meta">4:30 PM · 400 calories</div></div></div>
+            </div>
+          </div>
+          <div class="nav">
+            <button class="on"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/></svg><span>Today</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Groups</span></button>
+            <button class="addbtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg><span>Add</span></button>
+            <button><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Me</span></button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 29 edit meal -->
+      <div class="shot">
+        <div class="cap"><span class="idx">29</span><span class="txt"><span class="nm">Edit a logged meal</span>
+          <span class="sub">Issue #6. Same steppers as review. Leave <code>original_*</code> untouched — that's the AI's record.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1145px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Change this meal</h1><div class="day">Logged today at 1:40 PM</div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <span class="lab">Meal name</span>
+              <div class="inp focus" style="font-size:1.15rem">Chicken &amp; Vegetables</div>
+              <div class="field" style="margin-top:20px"><span class="lab">Calories</span>
+                <div class="num"><button>−</button><div class="inp">540</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Protein (g)</span>
+                <div class="num"><button>−</button><div class="inp">44</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Carbs (g)</span>
+                <div class="num"><button>−</button><div class="inp">26</div><button>+</button></div></div>
+              <div class="field"><span class="lab">Fat (g)</span>
+                <div class="num"><button>−</button><div class="inp">18</div><button>+</button></div></div>
+            </div>
+            <button class="big" style="min-height:76px">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Save changes</button>
+            <button class="big danger">Remove this meal</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 30 trends -->
+      <div class="shot">
+        <div class="cap"><span class="idx">30</span><span class="txt"><span class="nm">Trends</span>
+          <span class="sub">Issue #13. Hand-rolled SVG, no chart library. Goal line dashed in <code>--accent</code>.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1018px"><div class="screen">
+          <div class="pad"><h1>Your trends</h1><div class="day">Last 14 days</div></div>
+          <div class="stack">
+            <div class="segtoggle" style="width:100%">
+              <button class="on" style="flex:1;padding:12px 0">Calories</button>
+              <button style="flex:1;padding:12px 0">Protein</button>
+              <button style="flex:1;padding:12px 0">Carbs</button>
+              <button style="flex:1;padding:12px 0">Fat</button>
+            </div>
+            <div class="card">
+              <h2>Calories a day</h2>
+              <svg viewBox="0 0 380 190" width="100%" role="img" aria-label="Daily calories over fourteen days, with the 2000 calorie goal marked">
+                <line x1="0" y1="60" x2="380" y2="60" stroke="#A78BFA" stroke-width="2" stroke-dasharray="5 5"/>
+                <text x="378" y="52" text-anchor="end" fill="#A78BFA" font-size="13" font-weight="700" font-family="Outfit">goal 2000</text>
+                <g fill="#22D3EE">
+                  <rect x="4"   y="86"  width="19" height="90" rx="4"/>
+                  <rect x="30"  y="72"  width="19" height="104" rx="4"/>
+                  <rect x="56"  y="104" width="19" height="72" rx="4"/>
+                  <rect x="82"  y="52"  width="19" height="124" rx="4" fill="#FBBF24"/>
+                  <rect x="108" y="94"  width="19" height="82" rx="4"/>
+                  <rect x="134" y="66"  width="19" height="110" rx="4"/>
+                  <rect x="160" y="78"  width="19" height="98" rx="4"/>
+                  <rect x="186" y="112" width="19" height="64" rx="4"/>
+                  <rect x="212" y="44"  width="19" height="132" rx="4" fill="#FBBF24"/>
+                  <rect x="238" y="82"  width="19" height="94" rx="4"/>
+                  <rect x="264" y="70"  width="19" height="106" rx="4"/>
+                  <rect x="290" y="98"  width="19" height="78" rx="4"/>
+                  <rect x="316" y="62"  width="19" height="114" rx="4"/>
+                  <rect x="342" y="90"  width="19" height="86" rx="4"/>
+                </g>
+                <text x="13"  y="188" text-anchor="middle" fill="#D5DAE3" font-size="12" font-family="Outfit">10</text>
+                <text x="117" y="188" text-anchor="middle" fill="#D5DAE3" font-size="12" font-family="Outfit">14</text>
+                <text x="221" y="188" text-anchor="middle" fill="#D5DAE3" font-size="12" font-family="Outfit">18</text>
+                <text x="351" y="188" text-anchor="middle" fill="#D5DAE3" font-size="12" font-family="Outfit">23</text>
+              </svg>
+              <div class="note" style="margin-top:12px">Amber bars are days over your goal. You met your goal on 12 of 14 days.</div>
+            </div>
+            <div class="card">
+              <h2>Family, this week</h2>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700">You</span>
+                <span class="lab" style="margin:0">1780 avg</span></div>
+                <div class="mbar"><div style="width:71%;background:var(--cal)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700">Priya</span>
+                <span class="lab" style="margin:0">1620 avg</span></div>
+                <div class="mbar"><div style="width:65%;background:var(--cal)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700">Dad</span>
+                <span class="lab" style="margin:0">2140 avg</span></div>
+                <div class="mbar"><div style="width:86%;background:var(--cal)"></div></div></div>
+              <div class="note" style="margin-top:16px">Only people who share with you appear here.</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 31 trends empty -->
+      <div class="shot">
+        <div class="cap"><span class="idx">31</span><span class="txt"><span class="nm">Trends — not enough data</span>
+          <span class="sub">Issue #13. <strong>Build this state first.</strong> Fake numbers here are how the last version went wrong.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame" style="--h:913px"><div class="screen">
+          <div class="pad"><h1>Your trends</h1><div class="day">Last 14 days</div></div>
+          <div class="stack">
+            <div class="card" style="text-align:center;padding:40px 24px">
+              <div class="logo" style="margin:0 auto 22px">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>
+              </div>
+              <div style="font-size:1.3rem;font-weight:800;margin-bottom:10px">Nothing to show yet</div>
+              <div class="note">Log meals for a few days and your pattern will appear here.<br><br>
+                You have logged <b>2 of the last 14 days</b>.</div>
+            </div>
+            <button class="big">Add today's meal</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 32 group admin -->
+      <div class="shot">
+        <div class="cap"><span class="idx">32</span><span class="txt"><span class="nm">Manage group (owner only)</span>
+          <span class="sub">Issue #9. Both actions already work in the database and have no button.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1109px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Family</button>
+            <h1>Manage group</h1><div class="day">Only you can see this — you started this group</div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <h2>Invite code</h2>
+              <div class="codebox">FAM-7K2X9M</div>
+              <button class="big alt" style="margin-top:16px">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                Make a new code</button>
+              <div class="note" style="margin-top:14px">Anyone still using the old code will need the new one.</div>
+            </div>
+            <div class="card">
+              <h2>People in this group</h2>
+              <div class="item"><span class="av">P</span>
+                <div style="flex:1"><div class="name">Priya</div><div class="meta">Shares every meal</div></div>
+                <div class="del" style="color:#FCA5A5">−</div></div>
+              <div class="item"><span class="av">D</span>
+                <div style="flex:1"><div class="name">Dad</div><div class="meta">Shares daily totals</div></div>
+                <div class="del" style="color:#FCA5A5">−</div></div>
+              <div class="item"><span class="av">L</span>
+                <div style="flex:1"><div class="name">Liam</div><div class="meta">Not sharing</div></div>
+                <div class="del" style="color:#FCA5A5">−</div></div>
+              <div class="note" style="margin-top:14px">Removing someone stops them seeing anyone here, and stops you seeing them.</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 33 about me -->
+      <div class="shot">
+        <div class="cap"><span class="idx">33</span><span class="txt"><span class="nm">About me — editable</span>
+          <span class="sub">Issue #8. Reuses <code>NumberField</code> and <code>HeightField</code> from onboarding.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1121px"><div class="screen">
+          <div class="pad"><h1>About me</h1><div class="day">Used to suggest your daily goals</div></div>
+          <div class="stack">
+            <div class="card">
+              <div class="field"><span class="lab">Your age</span><div class="inp">42</div>
+                <div class="note" style="margin-top:8px">1–110 years</div></div>
+              <div class="field"><span class="lab">Your weight</span><div class="inp focus">66</div>
+                <div class="note" style="margin-top:8px">1–500 kg</div></div>
+              <div class="field">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+                  <span class="lab" style="margin-bottom:0">Your height</span>
+                  <div class="segtoggle"><button class="on">cm</button><button>ft &amp; in</button></div>
+                </div>
+                <div class="inp">165</div></div>
+              <button class="big" style="margin-top:20px">Save</button>
+            </div>
+            <div class="card privacy">
+              <div style="font-size:1.08rem;font-weight:700;margin-bottom:5px">Your weight changed</div>
+              <div class="note" style="margin-bottom:16px">Based on 66 kg we would suggest <b>1940 calories</b> and
+                <b>106g protein</b> a day, instead of your current 2000 and 150.</div>
+              <button class="big alt">Use these instead</button>
+            </div>
+            <div class="note" style="text-align:center">Nobody in your groups can see any of this.</div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 34 accuracy -->
+      <div class="shot">
+        <div class="cap"><span class="idx">34</span><span class="txt"><span class="nm">How good is the AI?</span>
+          <span class="sub">Issue #14. Every number here is already in the database and read by nothing.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1220px"><div class="screen">
+          <div class="pad"><h1>How good is the AI?</h1><div class="day">From your last 60 meals</div></div>
+          <div class="stack">
+            <div class="card" style="text-align:center;padding:26px 22px">
+              <div class="lab" style="margin:0">You corrected</div>
+              <div style="font-size:3.7rem;font-weight:800;color:var(--pro);line-height:1.15;margin:4px 0">28%</div>
+              <div class="lab" style="margin-bottom:18px">of its estimates</div>
+              <div class="bigbar"><div style="width:28%;background:var(--pro)"></div></div>
+              <div style="font-size:1.05rem;font-weight:700;margin-top:16px;color:var(--t2)">Target is under 35%</div>
+            </div>
+            <div class="card">
+              <h2>How far off, when it was wrong</h2>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--cal)">Calories</span>
+                <span class="lab" style="margin:0">74 kcal average</span></div>
+                <div class="mbar"><div style="width:37%;background:var(--cal)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--pro)">Protein</span>
+                <span class="lab" style="margin:0">6g average</span></div>
+                <div class="mbar"><div style="width:22%;background:var(--pro)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--carb)">Carbs</span>
+                <span class="lab" style="margin:0">11g average</span></div>
+                <div class="mbar"><div style="width:41%;background:var(--carb)"></div></div></div>
+              <div class="mrow"><div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:1.12rem;font-weight:700;color:var(--fat)">Fat</span>
+                <span class="lab" style="margin:0">5g average</span></div>
+                <div class="mbar"><div style="width:29%;background:var(--fat)"></div></div></div>
+            </div>
+            <div class="card">
+              <h2>When it says it's sure, is it?</h2>
+              <div class="item"><div style="flex:1"><div class="name">Said it was sure</div>
+                <div class="meta">41 meals · you changed 7</div></div>
+                <span style="font-size:1.3rem;font-weight:800;color:var(--pro)">17%</span></div>
+              <div class="item"><div style="flex:1"><div class="name">Said it wasn't sure</div>
+                <div class="meta">19 meals · you changed 10</div></div>
+                <span style="font-size:1.3rem;font-weight:800;color:var(--carb)">53%</span></div>
+              <div class="note" style="margin-top:14px">Higher on the bottom row means its confidence is honest.</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 35 quick relog -->
+      <div class="shot">
+        <div class="cap"><span class="idx">35</span><span class="txt"><span class="nm">Something I eat often</span>
+          <span class="sub">Issue #19. A third door on Add. One tap, no photo, no AI call, no quota spent.</span></span><span class="pill p">Designed</span></div>
+        <div class="frame tall" style="--h:1008px"><div class="screen">
+          <div class="pad">
+            <button class="big alt small"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+            <h1>Something you eat often</h1><div class="day">Tap once to log it again</div>
+          </div>
+          <div class="stack">
+            <button class="choice" style="min-height:88px">
+              <span style="display:flex;align-items:baseline;gap:10px;width:100%">
+                <span style="flex:1">Roti, Dal &amp; Curd</span>
+                <span style="color:var(--cal);font-weight:800">430</span></span>
+              <span>18g protein · 62g carbs · 12g fat · eaten 14 times</span></button>
+            <button class="choice" style="min-height:88px">
+              <span style="display:flex;align-items:baseline;gap:10px;width:100%">
+                <span style="flex:1">Protein Shake</span>
+                <span style="color:var(--cal);font-weight:800">220</span></span>
+              <span>30g protein · 12g carbs · 4g fat · eaten 11 times</span></button>
+            <button class="choice" style="min-height:88px">
+              <span style="display:flex;align-items:baseline;gap:10px;width:100%">
+                <span style="flex:1">Oats Bowl</span>
+                <span style="color:var(--cal);font-weight:800">310</span></span>
+              <span>11g protein · 52g carbs · 7g fat · eaten 9 times</span></button>
+            <button class="choice" style="min-height:88px">
+              <span style="display:flex;align-items:baseline;gap:10px;width:100%">
+                <span style="flex:1">Eggs &amp; Toast</span>
+                <span style="color:var(--cal);font-weight:800">340</span></span>
+              <span>22g protein · 24g carbs · 16g fat · eaten 8 times</span></button>
+            <div class="note" style="text-align:center">These are your own past meals. Nothing is estimated again.</div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== NOTES ===================== -->
+  <section class="sec" id="notes">
+    <div class="sec-head"><h2>Two things this gallery cannot show you</h2></div>
+    <div class="rules" style="margin-bottom:8px">
+      <div class="rule"><h4>Meal photos</h4>
+        <p>They're captured, compressed to ~25 KB, and uploaded to a private bucket — and then no screen
+        renders them. <code class="inline-code">signedThumbUrl()</code> has zero call sites. Screen 11 shows the
+        meal list as it exists today; adding a 52px thumbnail to each row is
+        <a href="BACKLOG.md">issue #3</a>.</p></div>
+      <div class="rule"><h4>Motion</h4>
+        <p>Every screen change is a 250ms fade (<code class="inline-code">.fade</code>), bars animate width over
+        500ms, and the toast slides up above the nav for 2.6 seconds. Keep transitions on width and opacity —
+        nothing in this app moves in a way that would need <code class="inline-code">prefers-reduced-motion</code>
+        to be turned off.</p></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>Fidelity note.</strong> Every frame above is real markup styled with a scoped copy of
+    <code class="inline-code">frontend/src/styles/variables.css</code> and
+    <code class="inline-code">index.css</code>, scaled to 82%. Nothing here is a redraw, so what you see is what
+    the classes actually produce. If you change the app's CSS, change the copy in this file's
+    <code class="inline-code">&lt;style&gt;</code> block too — a spec that has drifted from the product is worse
+    than no spec.</p>
+    <p>Built screens: <code class="inline-code">frontend/src/screens/</code> ·
+    Planned screens: <a href="BACKLOG.md">docs/BACKLOG.md</a> ·
+    Design rules: <a href="../CONTRIBUTING.md">CONTRIBUTING.md</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

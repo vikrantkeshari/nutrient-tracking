@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Check } from 'lucide-react';
 import { repo } from '../lib/repo';
 import { suggestGoals, DEFAULT_GOALS } from '../lib/goals';
-import { BackBtn, StepBars, Stepper, SHARE_OPTIONS } from '../components/UI';
+import { BackBtn, StepBars, NumberField, HeightField, SHARE_OPTIONS } from '../components/UI';
 
 // Screens: welcome | signin | forgot | sent | signup | about | groupsetup | sharing
 export default function Onboarding({ onDone }) {
@@ -12,7 +12,7 @@ export default function Onboarding({ onDone }) {
   const [busy, setBusy] = useState(false);
 
   const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [body, setBody] = useState({ age: 60, weight: 70, height: 165 });
+  const [body, setBody] = useState({ age: '', weight: '', height: '' });
   const [joinMode, setJoinMode] = useState(null); // null | 'join' | 'create'
   const [code, setCode] = useState('');
   const [groupName, setGroupName] = useState('');
@@ -141,9 +141,9 @@ export default function Onboarding({ onDone }) {
       <div className="stack">
         {err && <div className="err">{err}</div>}
         <div className="card">
-          <Stepper label="Your age" value={body.age} onChange={(v) => setBody({ ...body, age: v })} min={10} max={110} unit="In years" />
-          <Stepper label="Your weight" value={body.weight} onChange={(v) => setBody({ ...body, weight: v })} min={30} max={200} unit="In kilograms" />
-          <Stepper label="Your height" value={body.height} onChange={(v) => setBody({ ...body, height: v })} min={100} max={220} unit="In centimetres" />
+          <NumberField label="Your age" value={body.age} onChange={(v) => setBody({ ...body, age: v })} min={1} max={110} unit="1–110 years" placeholder="e.g. 42" />
+          <NumberField label="Your weight" value={body.weight} onChange={(v) => setBody({ ...body, weight: v })} min={1} max={500} unit="1–500 kg" placeholder="e.g. 70" />
+          <HeightField valueCm={body.height} onChange={(v) => setBody({ ...body, height: v })} />
         </div>
         <button className="big" disabled={busy} onClick={async () => {
           const goals = suggestGoals(body) ?? DEFAULT_GOALS;

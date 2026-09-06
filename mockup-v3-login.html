@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nutrient Tracking — Sign in & Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0C10; --card:#191C24; --card2:#232732;
+  --line:rgba(255,255,255,.14);
+  --accent:#A78BFA;
+  --cal:#22D3EE; --pro:#34D399; --carb:#FBBF24; --fat:#F87171;
+  --t1:#FFFFFF; --t2:#D5DAE3;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#000;font-family:Outfit,system-ui,sans-serif;color:var(--t1);line-height:1.5;font-size:18px}
+.phone{max-width:440px;min-height:100vh;margin:0 auto;background:var(--bg);display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;padding-bottom:30px}
+::-webkit-scrollbar{width:0}
+
+.pad{padding:30px 22px 12px}
+.stack{display:flex;flex-direction:column;gap:18px;padding:0 22px 30px}
+h1{font-size:2.1rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.day{font-size:1.1rem;color:var(--t2);font-weight:600;margin-top:8px}
+.lab{font-size:1.05rem;color:var(--t2);font-weight:700;margin-bottom:9px;display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.note{font-size:1rem;color:var(--t2);line-height:1.6;font-weight:500}
+
+button{font-family:inherit;cursor:pointer;border:none}
+.big{width:100%;min-height:72px;border-radius:16px;background:var(--accent);color:#12101A;
+  font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px}
+.big.alt{background:var(--card2);color:var(--t1);border:2px solid var(--line)}
+.big.plain{background:none;border:none;color:var(--t2);font-size:1.1rem;font-weight:700;min-height:60px}
+.big:active{transform:scale(.98)}
+.big[disabled]{opacity:.4}
+
+input{width:100%;min-height:68px;padding:0 18px;background:#0E1014;border:2px solid var(--line);
+  border-radius:14px;color:var(--t1);font-family:inherit;font-size:1.25rem;font-weight:600;outline:none}
+input:focus{border-color:var(--accent)}
+input::placeholder{color:#7A8290;font-weight:500}
+.pwwrap{position:relative}
+.pwwrap .show{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:56px;padding:0 16px;
+  border-radius:11px;background:var(--card2);color:var(--t2);font-size:1rem;font-weight:700;border:1px solid var(--line)}
+
+.field+.field{margin-top:20px}
+.step{display:flex;gap:8px;margin-bottom:20px}
+.step div{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.13)}
+.step div.on{background:var(--accent)}
+
+.num{display:flex;align-items:center;gap:12px}
+.num button{width:70px;min-height:68px;flex:0 0 70px;border-radius:14px;background:var(--card2);
+  border:2px solid var(--line);color:var(--t1);font-size:2rem;font-weight:700}
+.num input{text-align:center}
+
+.choice{width:100%;min-height:92px;border-radius:16px;background:var(--card2);border:2px solid var(--line);
+  color:var(--t1);font-size:1.25rem;font-weight:700;text-align:left;padding:18px 22px;
+  display:flex;flex-direction:column;justify-content:center;gap:5px}
+.choice span{font-size:1rem;color:var(--t2);font-weight:600}
+.choice:active{border-color:var(--accent)}
+
+.err{background:rgba(248,113,113,.14);border:2px solid rgba(248,113,113,.4);border-radius:14px;
+  padding:16px 18px;font-size:1.05rem;font-weight:600;color:#FCA5A5;display:flex;gap:12px;align-items:flex-start}
+
+.logo{width:88px;height:88px;border-radius:26px;background:rgba(167,139,250,.18);
+  border:2px solid rgba(167,139,250,.4);display:flex;align-items:center;justify-content:center;
+  font-size:2.6rem;margin-bottom:26px}
+svg.i{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fade{animation:f .25s ease}
+@keyframes f{from{opacity:0}to{opacity:1}}
+
+.picker{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:99;display:flex;gap:5px;
+  background:#232732;border:1px solid var(--line);border-radius:22px;padding:5px;flex-wrap:wrap;
+  max-width:96vw;justify-content:center}
+.picker button{background:none;color:var(--t2);font-size:.78rem;font-weight:700;padding:7px 12px;border-radius:18px}
+.picker button.on{background:var(--accent);color:#12101A}
+</style>
+</head>
+<body>
+
+<div class="picker" id="picker"></div>
+
+<div class="phone"><div class="scroll" id="view"></div></div>
+
+<script>
+const A={ screen:'welcome', pw:false, err:false, joinMode:null, email:'' };
+
+// keeps what was typed when the screen re-renders (e.g. Show/Hide password)
+function keepEmail(){const e=document.getElementById('si-email');if(e)A.email=e.value}
+// empty fields -> the real error state, so it can be reviewed by tapping
+function trySignIn(){
+  keepEmail();
+  const pw=document.getElementById('si-pw');
+  if(!A.email.trim()||!pw||!pw.value.trim()){A.err=true;Rr();return}
+  goTo('done');
+}
+
+const ic={
+  back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  warn:'<circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'
+};
+const I=(k,s=26)=>`<svg class="i" viewBox="0 0 24 24" style="width:${s}px;height:${s}px">${ic[k]}</svg>`;
+const goTo=s=>{A.screen=s;A.err=false;const v=document.getElementById('view');if(v)v.scrollTop=0;Rr()};
+const backBtn=s=>`<button class="big alt" style="width:auto;min-height:54px;padding:0 20px;font-size:1.05rem;margin-bottom:20px" onclick="goTo('${s}')">${I('back',22)} Back</button>`;
+const bars=(n,of)=>`<div class="step">${Array.from({length:of},(_,i)=>`<div class="${i<n?'on':''}"></div>`).join('')}</div>`;
+
+/* 1 ── welcome */
+const welcome=()=>`<div class="fade">
+  <div class="pad" style="padding-top:70px">
+    <div class="logo">🥗</div>
+    <h1>Track what you eat</h1>
+    <div class="day">Take a photo of your meal.<br>We work out the rest.</div>
+  </div>
+  <div class="stack" style="margin-top:26px">
+    <button class="big" onclick="goTo('signup')">Create an account</button>
+    <button class="big alt" onclick="goTo('signin')">I already have an account</button>
+  </div></div>`;
+
+/* 2 ── sign in */
+const signin=()=>`<div class="fade">
+  <div class="pad">${backBtn('welcome')}<h1>Sign in</h1></div>
+  <div class="stack">
+    ${A.err?`<div class="err">${I('warn',24)}<div>That email and password don't match.<br>Please try again.</div></div>`:''}
+    <div class="card">
+      <div class="field"><label class="lab">Your email</label>
+        <input id="si-email" type="email" placeholder="name@email.com" autocomplete="email" value="${A.email||''}"></div>
+      <div class="field"><label class="lab">Password</label>
+        <div class="pwwrap"><input id="si-pw" type="${A.pw?'text':'password'}" placeholder="Your password" autocomplete="current-password">
+          <button class="show" onclick="keepEmail();A.pw=!A.pw;Rr()">${A.pw?'Hide':'Show'}</button></div></div>
+    </div>
+    <button class="big" onclick="trySignIn()">Sign in</button>
+    <button class="big plain" onclick="goTo('forgot')">I forgot my password</button>
+  </div></div>`;
+
+/* 3 ── forgot */
+const forgot=()=>`<div class="fade">
+  <div class="pad">${backBtn('signin')}<h1>Forgot password</h1>
+    <div class="day">We will email you a link to make a new one.</div></div>
+  <div class="stack">
+    <div class="card"><label class="lab">Your email</label>
+      <input type="email" placeholder="name@email.com"></div>
+    <button class="big" onclick="goTo('sent')">Send me the link</button>
+  </div></div>`;
+
+const sent=()=>`<div class="fade">
+  <div class="pad" style="padding-top:80px;text-align:center">
+    <div class="logo" style="margin:0 auto 26px;background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4)">${I('mail',44)}</div>
+    <h1>Check your email</h1>
+    <div class="day">We sent a link to your email.<br>Open it to make a new password.</div></div>
+  <div class="stack" style="margin-top:26px">
+    <button class="big alt" onclick="goTo('signin')">Back to sign in</button></div></div>`;
+
+/* 4 ── create account */
+const signup=()=>`<div class="fade">
+  <div class="pad">${backBtn('welcome')}${bars(1,3)}<h1>Create account</h1>
+    <div class="day">Step 1 of 3</div></div>
+  <div class="stack">
+    <div class="card">
+      <div class="field"><label class="lab">Your name</label>
+        <input placeholder="e.g. Sunita" autocomplete="name"></div>
+      <div class="field"><label class="lab">Your email</label>
+        <input type="email" placeholder="name@email.com" autocomplete="email"></div>
+      <div class="field"><label class="lab">Make a password</label>
+        <div class="pwwrap"><input type="${A.pw?'text':'password'}" placeholder="At least 8 letters" autocomplete="new-password">
+          <button class="show" onclick="A.pw=!A.pw;Rr()">${A.pw?'Hide':'Show'}</button></div>
+        <div class="note" style="margin-top:12px">Use something you will remember. Tap <b>Show</b> to see what you typed.</div></div>
+    </div>
+    <button class="big" onclick="goTo('about')">Next</button>
+  </div></div>`;
+
+/* 5 ── about you */
+const num=(l,v,u)=>`<div class="field"><label class="lab">${l}</label>
+  <div class="num"><button>−</button><input value="${v}" inputmode="numeric"><button>+</button></div>
+  <div class="note" style="margin-top:8px">${u}</div></div>`;
+
+const about=()=>`<div class="fade">
+  <div class="pad">${backBtn('signup')}${bars(2,3)}<h1>About you</h1>
+    <div class="day">Step 2 of 3 — this helps us set your daily goals</div></div>
+  <div class="stack">
+    <div class="card">
+      ${num('Your age','62','In years')}
+      ${num('Your weight','74','In kilograms')}
+      ${num('Your height','168','In centimetres')}
+    </div>
+    <button class="big" onclick="goTo('groups')">Next</button>
+    <button class="big plain" onclick="goTo('groups')">Skip for now</button>
+  </div></div>`;
+
+/* 6 ── groups */
+const groups=()=>{
+  if(A.joinMode==='join')return joinCode();
+  if(A.joinMode==='create')return createGroup();
+  return `<div class="fade">
+    <div class="pad">${backBtn('about')}${bars(3,3)}<h1>Share with people</h1>
+      <div class="day">Step 3 of 3 — you can change this any time</div></div>
+    <div class="stack">
+      <button class="choice" onclick="A.joinMode='join';Rr()">Join a group
+        <span>Someone gave you a code</span></button>
+      <button class="choice" onclick="A.joinMode='create';Rr()">Start a new group
+        <span>Invite your family or friends</span></button>
+      <button class="choice" onclick="goTo('done')">Just me for now
+        <span>Track on your own — nobody sees anything</span></button>
+    </div></div>`;
+};
+
+const joinCode=()=>`<div class="fade">
+  <div class="pad"><button class="big alt" style="width:auto;min-height:54px;padding:0 20px;font-size:1.05rem;margin-bottom:20px" onclick="A.joinMode=null;A.err=false;Rr()">${I('back',22)} Back</button>
+    <h1>Join a group</h1><div class="day">Type the code you were given</div></div>
+  <div class="stack">
+    ${A.err?`<div class="err">${I('warn',24)}<div>We could not find that code.<br>Please check and try again.</div></div>`:''}
+    <div class="card"><label class="lab">Group code</label>
+      <input placeholder="FAM-7K2X9M" style="text-align:center;font-size:1.6rem;letter-spacing:.06em;text-transform:uppercase">
+      <div class="note" style="margin-top:14px">Ask whoever set up the group to send you the code.</div></div>
+    <button class="big" onclick="goTo('sharing')">Join</button>
+  </div></div>`;
+
+const createGroup=()=>`<div class="fade">
+  <div class="pad"><button class="big alt" style="width:auto;min-height:54px;padding:0 20px;font-size:1.05rem;margin-bottom:20px" onclick="A.joinMode=null;Rr()">${I('back',22)} Back</button>
+    <h1>New group</h1><div class="day">Give it a name your people will recognise</div></div>
+  <div class="stack">
+    <div class="card"><label class="lab">Group name</label>
+      <input placeholder="e.g. Family" value="Family">
+      <div class="note" style="margin-top:14px">You will get a code to share with them.</div></div>
+    <button class="big" onclick="goTo('sharing')">Create group</button>
+  </div></div>`;
+
+/* 7 ── what they see */
+const sharing=()=>`<div class="fade">
+  <div class="pad"><h1>What can they see?</h1>
+    <div class="day">You choose. You can change it later.</div></div>
+  <div class="stack">
+    <button class="choice" style="min-height:104px" onclick="goTo('done')">Every meal I eat
+      <span>They see each meal and its numbers</span></button>
+    <button class="choice" style="min-height:104px" onclick="goTo('done')">Only my daily total
+      <span>They see one total per day, not each meal</span></button>
+    <button class="choice" style="min-height:104px" onclick="goTo('done')">Nothing at all
+      <span>They only see your name</span></button>
+    <div class="card" style="background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.35)">
+      <div class="note" style="color:#fff;font-weight:700;font-size:1.1rem;margin-bottom:6px">Your photos are never shared</div>
+      <div class="note">Whichever you pick, nobody can see your meal photos.</div></div>
+  </div></div>`;
+
+/* 8 ── done */
+const done=()=>`<div class="fade">
+  <div class="pad" style="padding-top:80px;text-align:center">
+    <div class="logo" style="margin:0 auto 26px;background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4)">${I('check',46)}</div>
+    <h1>You're all set</h1>
+    <div class="day">Add your first meal whenever you are ready.</div></div>
+  <div class="stack" style="margin-top:26px">
+    <button class="big" onclick="goTo('welcome')">Start using the app</button></div></div>`;
+
+/* shell */
+const SCREENS={welcome,signin,forgot,sent,signup,about,groups,sharing,done};
+const LABELS={welcome:'Welcome',signin:'Sign in',forgot:'Forgot',sent:'Sent',signup:'Sign up',about:'About you',groups:'Groups',sharing:'Sharing',done:'Done'};
+function Rr(){
+  document.getElementById('view').innerHTML=SCREENS[A.screen]();
+  document.getElementById('picker').innerHTML=Object.keys(SCREENS)
+    .map(k=>`<button class="${A.screen===k?'on':''}" onclick="A.joinMode=null;goTo('${k}')">${LABELS[k]}</button>`).join('');
+}
+function showErr(){A.err=true;Rr()}
+Rr();
+</script>
+</body>
+</html>

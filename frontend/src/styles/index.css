@@ -64,6 +64,10 @@ input::placeholder, textarea::placeholder { color: #7A8290; font-weight: 500; }
 }
 .num input { text-align: center; }
 
+.segtoggle { display: flex; gap: 4px; background: var(--card2); border: 1px solid var(--line); border-radius: 11px; padding: 3px; }
+.segtoggle button { padding: 7px 14px; min-height: unset; border-radius: 8px; font-size: .92rem; font-weight: 700; color: var(--t2); background: none; }
+.segtoggle button.on { background: var(--accent); color: #12101A; }
+
 .choice {
   width: 100%; min-height: 90px; border-radius: 16px; background: var(--card2);
   border: 2px solid var(--line); color: var(--t1); font-size: 1.2rem; font-weight: 700;
